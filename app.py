@@ -51,10 +51,10 @@ def get_user_by_username(username):
     return user
 
 # Function to save a new user
-def save_user(username, hashed_password):
+def save_user(username, User_Role, hashed_password):
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute("INSERT INTO users (username, password) VALUES (%s, %s)", (username, hashed_password))
+    cursor.execute("INSERT INTO users (username,User_Role, password) VALUES (%s,%s,%s)", (username, User_Role, hashed_password))
     conn.commit()
     cursor.close()
     conn.close()
@@ -91,9 +91,10 @@ def index():
 @app.route("/register", methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
-        username = request.form['username']
-        password = request.form['password']
-        confirm_password = request.form['confirm_password']
+        username = request.form['txtUSerEmail']
+        User_Role = request.form['User_Role']
+        password = request.form['txtPassword']
+        confirm_password = request.form['txtConfirm_Password']
 
         # Check if passwords match
         if password != confirm_password:
@@ -107,7 +108,7 @@ def register():
 
         # Hash the password and store the user in the database
         hashed_password = generate_password_hash(password)
-        save_user(username, hashed_password)
+        save_user(username, User_Role, hashed_password)
 
         flash("Registration successful! Please log in.", "success")
         return redirect(url_for('login'))
@@ -117,8 +118,8 @@ def register():
 @app.route("/login", methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        username = request.form['username']
-        password = request.form['password']
+        username = request.form['txtUSerEmail']
+        password = request.form['txtPassword']
 
         # Retrieve the user from the database
         user = get_user_by_username(username)
