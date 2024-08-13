@@ -1,73 +1,163 @@
-from flask import Flask, request, jsonify
-import smtplib
-import re
-import random
-import string
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
+from flask import Flask, jsonify, request, session, redirect, url_for, flash, render_template
+import mysql.connector
+import secrets
+import jwt
+from werkzeug.security import generate_password_hash, check_password_hash
+from datetime import datetime, timedelta
 
+# Author: Yasiru
+# Contact: https://linktr.ee/yasiruchamuditha for more information.
+
+# Create a secret key for session management
+secret = secrets.token_urlsafe(32)
+
+# Initialize the Flask app
 app = Flask(__name__)
+app.secret_key = secret
+jwt_secret = secrets.token_urlsafe(32)  # Secret key for JWT
 
-def generate_random_code(length=8):
-    # Generate a random code of specified length
-    letters_and_digits = string.ascii_letters + string.digits
-    return ''.join(random.choice(letters_and_digits) for i in range(length))
+# Database connection function
+def get_db_connection():
+    return mysql.connector.connect(
+        host='localhost',  # Change this to your database host
+        user='root',  # Change this to your database user
+        password='root',  # Change this to your database password
+        database='flask_auth_db'  # Change this to your database name
+    )
 
-def extract_email_from_html(html_content):
-    # Extract the sender's email address from the HTML content
-    match = re.search(r'[\w\.-]+@[\w\.-]+', html_content)
-    return match.group(0) if match else None
+# Initialize the database (create table if not exists)
+def init_db():
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS users (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        username VARCHAR(255) UNIQUE NOT NULL,
+        password VARCHAR(255) NOT NULL
+    )
+    ''')
+    conn.commit()
+    cursor.close()
+    conn.close()
 
-def send_email(subject, recipient_email, html_template):
-    # Define the sender's email credentials
-    sender_email = "your_email@example.com"
-    sender_password = "your_password"
+# Function to fetch a user by username
+def get_user_by_username(username):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM users WHERE username = %s", (username,))
+    user = cursor.fetchone()
+    cursor.close()
+    conn.close()
+    return user
 
-    # Extract the sender email from the HTML template
-    extracted_email = extract_email_from_html(html_template)
+# Function to save a new user
+def save_user(username, hashed_password):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("INSERT INTO users (username, password) VALUES (%s, %s)", (username, hashed_password))
+    conn.commit()
+    cursor.close()
+    conn.close()
 
-    if extracted_email:
-        print(f"Extracted Sender Email: {extracted_email}")
-    else:
-        print("No email address found in the HTML template.")
+# Function to generate a JWT token
+def generate_jwt_token(username):
+    payload = {
+        'user': username,
+        'exp': datetime.utcnow() + timedelta(hours=1)  # Token expires in 1 hour
+    }
+    token = jwt.encode(payload, jwt_secret, algorithm='HS256')
+    return token
 
-    # Generate a random code
-    random_code = generate_random_code()
+# Function to decode a JWT token
+def decode_jwt_token(token):
+    try:
+        decoded = jwt.decode(token, jwt_secret, algorithms=['HS256'])
+        return decoded['user']
+    except jwt.ExpiredSignatureError:
+        return None  # Token has expired
+    except jwt.InvalidTokenError:
+        return None  # Invalid token
 
-    # Create the email
-    message = MIMEMultipart("alternative")
-    message["Subject"] = subject
-    message["From"] = sender_email
-    message["To"] = recipient_email
+# Route to load the index page (which also serves as the home page after login)
+@app.route("/")
+def index():
+    if 'jwt_token' in session:
+        user = decode_jwt_token(session['jwt_token'])
+        if user:
+            return render_template('index.html', logged_in=True, user=user)
+    return render_template('index.html', logged_in=False)
 
-    # Insert the random code into the HTML template
-    html_content = html_template.replace("{code}", random_code)
+# Route to load the register page
+@app.route("/register", methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        confirm_password = request.form['confirm_password']
 
-    # Attach the HTML content to the email
-    part = MIMEText(html_content, "html")
-    message.attach(part)
+        # Check if passwords match
+        if password != confirm_password:
+            flash("Passwords do not match!", "danger")
+            return redirect(url_for('register'))
 
-    # Send the email
-    with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
-        server.login(sender_email, sender_password)
-        server.sendmail(sender_email, recipient_email, message.as_string())
+        # Check if username already exists
+        if get_user_by_username(username):
+            flash("Username already taken!", "danger")
+            return redirect(url_for('register'))
 
-    print(f"Email sent to {recipient_email} with the random code: {random_code}")
-    return random_code
+        # Hash the password and store the user in the database
+        hashed_password = generate_password_hash(password)
+        save_user(username, hashed_password)
 
-@app.route('/send_code', methods=['POST'])
-def send_code():
-    data = request.json
-    subject = data.get('subject')
-    recipient_email = data.get('recipient_email')
-    html_template = data.get('html_template')
+        flash("Registration successful! Please log in.", "success")
+        return redirect(url_for('login'))
+    return render_template('register.html')
 
-    if not subject or not recipient_email or not html_template:
-        return jsonify({"error": "Missing required fields"}), 400
+# Route to load the login page
+@app.route("/login", methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
 
-    random_code = send_email(subject, recipient_email, html_template)
-    
-    return jsonify({"message": f"Email sent to {recipient_email} with the random code", "code": random_code})
+        # Retrieve the user from the database
+        user = get_user_by_username(username)
+        if user is None:
+            flash("Username not found!", "danger")
+            return redirect(url_for('login'))
 
-if __name__ == '__main__':
+        # Verify the password
+        hashed_password = user[2]  # Password is in the third column
+        if not check_password_hash(hashed_password, password):
+            flash("Incorrect password!", "danger")
+            return redirect(url_for('login'))
+
+        # If login is successful, generate a JWT token
+        token = generate_jwt_token(username)
+        session['jwt_token'] = token
+        flash("Login successful!", "success")
+        return redirect(url_for('index'))
+    return render_template('login.html')
+
+# Route to log out and end the session
+@app.route('/logout')
+def logout():
+    session.pop('jwt_token', None)  # Remove JWT token from session
+    flash("Logged out successfully.", "info")
+    return redirect(url_for('index'))
+
+if __name__ == "__main__":
+    init_db()  # Initialize the database and create tables
     app.run(debug=True)
+
+
+# CREATE DATABASE IF NOT EXISTS flask_auth_db;
+
+# USE flask_auth_db;
+
+# CREATE TABLE IF NOT EXISTS users (
+#     id INT AUTO_INCREMENT PRIMARY KEY,
+#     username VARCHAR(255) UNIQUE NOT NULL,
+#     password VARCHAR(255) NOT NULL,
+#     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+# );
