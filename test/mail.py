@@ -1,3 +1,4 @@
+#send mail function
 from flask import Flask, request, jsonify
 import smtplib
 import re

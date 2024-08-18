@@ -1,3 +1,4 @@
+## working fine.Register,login funtion working fine.Simple structure
 # from flask import Flask, jsonify, request, session, redirect, url_for, flash, render_template
 # import mysql.connector
 # import secrets
