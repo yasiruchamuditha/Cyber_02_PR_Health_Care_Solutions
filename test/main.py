@@ -1,3 +1,4 @@
+#simple structure
 # from flask import Flask, flash, render_template, url_for, request, session
 # import secrets 
 
