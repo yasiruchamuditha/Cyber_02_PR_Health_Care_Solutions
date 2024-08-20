@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Verify Code</title>
+</head>
+<body>
+    <h2>Verify Code</h2>
+    <form method="POST">
+        <div>
+            <label for="txtUSerEmail">Email:</label>
+            <input type="email" name="txtUSerEmail" value="{{ request.args.get('email') }}" readonly required>
+        </div>
+        <div>
+            <label for="txtVerificationCode">Verification Code:</label>
+            <input type="text" name="txtVerificationCode" required>
+        </div>
+        <button type="submit">Verify</button>
+    </form>
+</body>
+</html>
