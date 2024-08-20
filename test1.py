@@ -239,6 +239,113 @@ def login():
         return redirect(url_for('index'))
     return render_template('login.html')
 
+# Route to handle user forgot_password
+@app.route("/forgot_password", methods=['GET', 'POST'])
+def forgot_password():
+    if request.method == 'POST':
+        username = request.form['txtUSerEmail']
+
+        # Check if the user exists
+        user = get_user_by_username(username)
+        if user is None:
+            flash("Email not found!", "danger")
+            return redirect(url_for('forgot_password'))
+
+        # Generate a new verification code
+        verification_code = generate_verification_code()
+        code_expires_at = datetime.utcnow() + timedelta(minutes=10)  # Code expires in 10 minutes
+
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("UPDATE users SET verification_code = %s, code_expires_at = %s WHERE username = %s",
+                       (verification_code, code_expires_at, username))
+        conn.commit()
+        cursor.close()
+        conn.close()
+
+        # Send the verification code via email
+        send_verification_email(username, verification_code)
+
+        flash("A verification code has been sent to your email.", "success")
+        return redirect(url_for('verify_code', email=username))
+
+    return render_template('forgot_password.html')
+
+#Route to handle user verify_code
+@app.route("/verify_code", methods=['GET', 'POST'])
+def verify_code():
+    if request.method == 'POST':
+        username = request.form['txtUSerEmail']
+        verification_code = request.form['txtVerificationCode']
+
+        # Fetch the user and check the verification code
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("SELECT verification_code, code_expires_at FROM users WHERE username = %s", (username,))
+        user = cursor.fetchone()
+
+        if user is None:
+            flash("Invalid email!", "danger")
+            return redirect(url_for('verify_code', email=username))
+
+        stored_code, code_expires_at = user
+
+        if datetime.utcnow() > code_expires_at:
+            flash("Verification code expired. Please try again.", "danger")
+            cursor.close()
+            conn.close()
+            return redirect(url_for('forgot_password'))
+
+        if stored_code != verification_code:
+            flash("Invalid verification code!", "danger")
+            return redirect(url_for('verify_code', email=username))
+
+        # If the code is correct, store the username in the session and redirect to the reset password page
+        session['verified_user'] = username
+        flash("Verification successful! You can now reset your password.", "success")
+        cursor.close()
+        conn.close()
+        return redirect(url_for('reset_password'))
+
+    # If it's a GET request, render the verify_code page with the email pre-filled
+    email = request.args.get('email')
+    return render_template('verify_code.html', email=email)
+
+
+
+#Route to handle user reset_password
+@app.route("/reset_password", methods=['GET', 'POST'])
+def reset_password():
+    if 'verified_user' not in session:
+        flash("You need to verify your account first.", "danger")
+        return redirect(url_for('forgot_password'))
+
+    if request.method == 'POST':
+        new_password = request.form['txtPassword']
+        confirm_password = request.form['txtConfirm_Password']
+
+        # Check if passwords match
+        if new_password != confirm_password:
+            flash("Passwords do not match!", "danger")
+            return redirect(url_for('reset_password'))
+
+        username = session['verified_user']
+        hashed_password = generate_password_hash(new_password)
+
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("UPDATE users SET password = %s WHERE username = %s", (hashed_password, username))
+        conn.commit()
+        cursor.close()
+        conn.close()
+
+        session.pop('verified_user', None)  # Clear the session
+        flash("Password reset successfully! Please log in.", "success")
+        return redirect(url_for('login'))
+
+    return render_template('reset_password.html')
+
+
 
 # Route to log out and end the session
 @app.route('/logout')
