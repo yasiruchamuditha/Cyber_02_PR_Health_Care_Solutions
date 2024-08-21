@@ -15,7 +15,7 @@ import requests
 
 # Create a secret key for session management
 secret = secrets.token_urlsafe(32)
-# Replace with your reCAPTCHA secret key
+# reCAPTCHA secret key
 RECAPTCHA_SECRET_KEY = '6LdyBisqAAAAAFMn8RKKJU3yxIxggaX6kVk1fi5G'  
 
 # Initialize the Flask app
@@ -26,10 +26,10 @@ jwt_secret = secrets.token_urlsafe(32)  # Secret key for JWT
 # Database connection function
 def get_db_connection():
     return mysql.connector.connect(
-        host='localhost',  # Change this to your database host
-        user='root',  # Change this to your database user
-        password='root',  # Change this to your database password
-        database='flask_auth_db'  # Change this to your database name
+        host='localhost',         # Database host
+        user='root',              # Database user
+        password='root',          # Database password
+        database='flask_auth_db'  # Database name
     )
 
 # Initialize the database (create table if not exists)

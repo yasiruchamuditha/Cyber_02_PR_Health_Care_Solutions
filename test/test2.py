@@ -1,49 +1,137 @@
-@app.route("/login", methods=['GET', 'POST'])
-def login():
-    if request.method == 'POST':
-        recaptcha_response = request.form.get('g-recaptcha-response')
-        payload = {
-            'secret': RECAPTCHA_SECRET_KEY,
-            'response': recaptcha_response
-        }
-        response = requests.post('https://www.google.com/recaptcha/api/siteverify', data=payload)
-        result = response.json()
+# #save the data in database using encryption method,not working and need to modified
+# from flask import Flask, request, redirect, url_for, flash, render_template
+# import mysql.connector
+# from cryptography.fernet import Fernet
+# from cryptography.hazmat.backends import default_backend
+# from cryptography.hazmat.primitives import hashes
+# from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
+# import secrets
 
-        if not result.get('success'):
-            flash("reCAPTCHA verification failed. Please try again.", "danger")
-            return redirect(url_for('login'))
+# # Author: Yasiru
+# # Contact: https://linktr.ee/yasiruchamuditha for more information.
 
-        username = request.form['txtUSerEmail']
-        password = request.form['txtPassword']
+# # Generate a key for encryption and decryption
+# # You must store this key securely. In production, you may use a secure key management service.
+# key = Fernet.generate_key()
+# cipher_suite = Fernet(key)
 
-        # Retrieve the user from the database
-        conn = get_db_connection()
-        cursor = conn.cursor()
-        cursor.execute("SELECT * FROM users WHERE username = %s", (username,))
-        user = cursor.fetchone()
-        cursor.close()
-        conn.close()
+# # Create a secret key for session management
+# secret = secrets.token_urlsafe(32)
 
-        if user is None:
-            flash("Username not found!", "danger")
-            return redirect(url_for('login'))
+# # Initialize the Flask app
+# app = Flask(__name__)
+# app.secret_key = secret
 
-        # Check if user is verified
-        is_verified = user[4]  # Assuming 'is_verified' is in the fifth column
-        if not is_verified:
-            flash("Account not verified! Please check your email.", "danger")
-            return redirect(url_for('verify'))
+# # Database connection function
+# def get_db_connection():
+#     return mysql.connector.connect(
+#         host='localhost',
+#         user='root',
+#         password='root',
+#         database='secure_db'
+#     )
 
-        # Verify the password
-        hashed_password = user[2]  # Assuming hashed password is in the third column
-        if not check_password_hash(hashed_password, password):
-            flash("Incorrect password!", "danger")
-            return redirect(url_for('login'))
+# # Initialize the database (create table if not exists)
+# def init_db():
+#     conn = get_db_connection()
+#     cursor = conn.cursor()
+#     cursor.execute('''
+#     CREATE TABLE IF NOT EXISTS users (
+#         id INT AUTO_INCREMENT PRIMARY KEY,
+#         username VARCHAR(255) UNIQUE NOT NULL,
+#         password BLOB NOT NULL,
+#         encrypted_data BLOB NOT NULL,
+#         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+#     )
+#     ''')
+#     conn.commit()
+#     cursor.close()
+#     conn.close()
 
-        # If login is successful, generate a JWT token
-        token = generate_jwt_token(username)
-        session['jwt_token'] = token
-        flash("Login successful!", "success")
-        return redirect(url_for('index'))
+# # Function to save a new user with encrypted data
+# def save_user(username, password, sensitive_data):
+#     conn = get_db_connection()
+#     cursor = conn.cursor()
+    
+#     # Hash the password
+#     hashed_password = generate_password_hash(password)
+    
+#     # Encrypt the sensitive data
+#     encrypted_data = cipher_suite.encrypt(sensitive_data.encode('utf-8'))
+    
+#     cursor.execute("INSERT INTO users (username, password, encrypted_data) VALUES (%s, %s, %s)", 
+#                    (username, hashed_password, encrypted_data))
+#     conn.commit()
+#     cursor.close()
+#     conn.close()
 
-    return render_template('login.html')
+# # Function to retrieve and decrypt sensitive data
+# def get_user_sensitive_data(username):
+#     conn = get_db_connection()
+#     cursor = conn.cursor()
+#     cursor.execute("SELECT encrypted_data FROM users WHERE username = %s", (username,))
+#     encrypted_data = cursor.fetchone()[0]
+#     cursor.close()
+#     conn.close()
+    
+#     # Decrypt the data
+#     decrypted_data = cipher_suite.decrypt(encrypted_data).decode('utf-8')
+#     return decrypted_data
+
+# # Route to load the register page and handle registration
+# @app.route("/register", methods=['GET', 'POST'])
+# def register():
+#     if request.method == 'POST':
+#         username = request.form['username']
+#         password = request.form['password']
+#         sensitive_data = request.form['sensitive_data']
+
+#         # Check if username already exists
+#         conn = get_db_connection()
+#         cursor = conn.cursor()
+#         cursor.execute("SELECT * FROM users WHERE username = %s", (username,))
+#         user = cursor.fetchone()
+#         if user:
+#             flash("Username already taken!", "danger")
+#             return redirect(url_for('register'))
+        
+#         # Save the user with encrypted data
+#         save_user(username, password, sensitive_data)
+
+#         flash("Registration successful!", "success")
+#         return redirect(url_for('login'))
+#     return render_template('register.html')
+
+# # Route to load the login page and handle login
+# @app.route("/login", methods=['GET', 'POST'])
+# def login():
+#     if request.method == 'POST':
+#         username = request.form['username']
+#         password = request.form['password']
+
+#         # Retrieve the user from the database
+#         conn = get_db_connection()
+#         cursor = conn.cursor()
+#         cursor.execute("SELECT password FROM users WHERE username = %s", (username,))
+#         user = cursor.fetchone()
+#         cursor.close()
+#         conn.close()
+
+#         if user is None or not check_password_hash(user[0], password):
+#             flash("Invalid username or password!", "danger")
+#             return redirect(url_for('login'))
+
+#         # On successful login, retrieve and decrypt sensitive data
+#         sensitive_data = get_user_sensitive_data(username)
+#         flash(f"Login successful! Your sensitive data: {sensitive_data}", "success")
+#         return redirect(url_for('index'))
+#     return render_template('login.html')
+
+# # Route to load the index page (which serves as the home page after login)
+# @app.route("/")
+# def index():
+#     return render_template('index.html')
+
+# if __name__ == "__main__":
+#     init_db()  # Initialize the database and create tables
+#     app.run(debug=True)
