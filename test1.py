@@ -99,6 +99,22 @@ def index():
             return render_template('index.html', logged_in=True, user=user)
     return render_template('index.html', logged_in=False)
 
+@app.route("/home")
+def home():
+    if 'jwt_token' in session:
+        user = decode_jwt_token(session['jwt_token'])
+        if user:
+            return render_template('index.html', logged_in=True, user=user)
+    return render_template('Login.html', logged_in=False)
+
+@app.route("/services")
+def services():
+    if 'jwt_token' in session:
+        user = decode_jwt_token(session['jwt_token'])
+        if user:
+            return render_template('Services.html', logged_in=True, user=user)
+    return render_template('Login.html', logged_in=False)
+
 # Function to generate a random verification code
 def generate_verification_code():
     return secrets.token_hex(3).upper()  # Generates a 6-character alphanumeric code
