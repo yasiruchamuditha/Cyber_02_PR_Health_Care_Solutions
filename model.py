@@ -1,5 +1,4 @@
 # model.py
-
 import mysql.connector
 import secrets
 import jwt
@@ -8,6 +7,8 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime, timedelta
+from cryptography.fernet import Fernet
+import base64
 
 # Database connection function
 def get_db_connection():
@@ -82,10 +83,27 @@ def send_verification_email(to_email, code):
     server.sendmail(from_email, to_email, text)
     server.quit()
 
-# Initialize the database (create table if not exists)
+
+# Function to save checkup details
+def save_checkup_details(patient_nic, email, appointment_date, appointment_time, test_type):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute('''
+        INSERT INTO regular_checkups (patient_nic, email, appointment_date, appointment_time, test_type, submitted_at)
+        VALUES (%s, %s, %s, %s, %s, %s)
+    ''', (patient_nic, email, appointment_date, appointment_time, test_type, datetime.utcnow()))
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+
+
+# Function to initialize the database
 def init_db():
     conn = get_db_connection()
     cursor = conn.cursor()
+    
+    # Create the users table
     cursor.execute('''
     CREATE TABLE IF NOT EXISTS users (
         id INT AUTO_INCREMENT PRIMARY KEY,
@@ -98,6 +116,20 @@ def init_db():
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP  -- Timestamp of when the user was created
     )
     ''')
+
+    # Create the regular_checkups table
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS regular_checkups (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        patient_nic VARCHAR(20) NOT NULL,
+        email VARCHAR(255) NOT NULL,
+        appointment_date DATE NOT NULL,
+        appointment_time TIME NOT NULL,
+        test_type VARCHAR(50) NOT NULL,
+        submitted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+    ''')
+
     conn.commit()
     cursor.close()
     conn.close()

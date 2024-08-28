@@ -2,7 +2,7 @@
 
 from flask import Flask, request, jsonify, session, redirect, url_for, flash, render_template
 from model import (
-    get_db_connection, get_user_by_username, save_user,
+    get_db_connection, get_user_by_username, save_checkup_details, save_user,
     generate_jwt_token, decode_jwt_token, generate_verification_code,
     send_verification_email, init_db
 )
@@ -43,6 +43,14 @@ def services():
         user = decode_jwt_token(session['jwt_token'], jwt_secret)
         if user:
             return render_template('Services.html', logged_in=True, user=user)
+    return render_template('Login.html', logged_in=False)
+
+@app.route("/regular_checkup")
+def s_regularCheckup():
+    if 'jwt_token' in session:
+        user = decode_jwt_token(session['jwt_token'], jwt_secret)
+        if user:
+            return render_template('regular_checkup.html', logged_in=True, user=user)
     return render_template('Login.html', logged_in=False)
 
 @app.route("/register", methods=['GET', 'POST'])
@@ -285,5 +293,28 @@ def logout():
     session.pop('jwt_token', None)
     flash("You have been logged out.", "success")
     return redirect(url_for('index'))
+
+
+@app.route("/regular_checkup", methods=['GET', 'POST'])
+def regular_checkup():
+    # Check if user is logged in
+    if 'jwt_token' not in session:
+        flash("You need to log in to access this page.", "warning")
+        return redirect(url_for('login'))
+
+    if request.method == 'POST':
+        patient_nic = request.form['txtPatient_NIC']
+        email = request.form['txtEmail']
+        appointment_date = request.form['txtAppointment_Date']
+        appointment_time = request.form['txtAppointment_Time']
+        test_type = request.form['txtTest_Type']
+
+        # Save the checkup details in the database
+        save_checkup_details(patient_nic, email, appointment_date, appointment_time, test_type)
+
+        flash("Your checkup details have been submitted successfully!", "success")
+        return redirect(url_for('regular_checkup'))
+
+    return render_template('regular_checkup.html')
 
 

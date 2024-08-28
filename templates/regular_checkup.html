@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-4bw+/aepP/YC94hEpVNVgiZdgIC5+VKNBQNGCHeKRQN+PtmoHDEXuppvnDJzQIu9" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-HwwvtgBNo3bZJJLYd8oVXjrBZt8cqVSpeBNS5n7C8IVInixGAoxmnlMuBnhbgrkm" crossorigin="anonymous"></script>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/style.css') }}">
+    <title>PR SECURE SOLUTIONS - REGULAR CHECKUP</title>
+    <link rel="icon" type="image/x-icon" href="https://cdn4.iconfinder.com/data/icons/social-messaging-ui-color-and-shapes-1/177800/01-1024.png" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.0/css/all.min.css" rel="stylesheet">
+    <link href="https://unpkg.com/boxicons@2.1.2/css/boxicons.min.css" rel="stylesheet"/>
+    <!--
+   * @author Yasiru
+   * contact me : https://linktr.ee/yasiruchamuditha for more information.
+   -->
+</head>
+<body style="background: url(static/images/4register.png); background-size: cover;">
+    {% include 'nav.html' %}
+    <div class="container-fluid" id="containerm">
+        <h1>REGULAR CHECKUP FORM</h1>
+
+        <!-- flashed messages code -->
+        {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <ul class="feedback-messages">
+                {% for message in messages %}
+                    <li>{{ message }}</li>
+                {% endfor %}
+            </ul>
+
+            <script>
+                // Function to show the alert popup
+                function showAlert(message) {
+                    var alertPopup = document.getElementById("alert-popup");
+                    alertPopup.textContent = message;
+                    alertPopup.style.display = "block";
+            
+                    // Hide the popup after 5 seconds 
+                    setTimeout(function () {
+                        alertPopup.style.display = "none";
+                    }, 5000); // 5000 milliseconds = 5 seconds
+                }
+            
+                // Check if there are flashed messages
+                var messages = document.querySelectorAll(".feedback-messages li");
+                if (messages.length > 0) {
+                    // Display each flashed message as an alert
+                    messages.forEach(function (messageElement) {
+                        showAlert(messageElement.textContent);
+                    });
+                }
+            </script>
+        {% endif %}
+        {% endwith %}
+
+        <!-- popup -->
+        <div id="alert-popup" class="alert-popup"></div>
+
+        <form class="row g-3 needs-validation" name="frmBloodTest" method="POST" autocomplete="off" action="/regular_checkup" onsubmit="return validateForm()">
+            <div class="inputfeild mb-3">
+                <label for="patient_id" class="form-label">Patient NIC:</label>
+                <input type="text" id="patient_id" name="txtPatient_NIC" class="form-control" placeholder="Please Enter Your NIC:" required>
+                <span id="patient_id_error" class="text-danger"></span>
+            </div>
+
+            <div class="inputfeild mb-3">
+                <label for="email" class="form-label">Email:</label>
+                <input type="email" id="email" name="txtEmail" class="form-control" placeholder="Please Enter Your Email:" required>
+                <span id="email_error" class="text-danger"></span>
+            </div>
+
+            <div class="inputfeild mb-3">
+                <label for="appointment_date" class="form-label">Preferred Test Date:</label>
+                <input type="date" id="appointment_date" name="txtAppointment_Date" class="form-control" required>
+                <span id="appointment_date_error" class="text-danger"></span>
+            </div>
+
+            <div class="inputfeild mb-3">
+                <label for="appointment_time" class="form-label">Preferred Test Time:</label>
+                <input type="time" id="appointment_time" name="txtAppointment_Time" class="form-control" required>
+                <span id="appointment_time_error" class="text-danger"></span>
+            </div>
+
+            <div class="inputfeild mb-3">
+                <label for="test_type" class="form-label">Regular Checkup Type:</label>
+                <select id="test_type" name="txtTest_Type" class="form-select" required>
+                    <option value="" disabled selected>Select a Type</option>
+                    <option value="APE">Annual Physical Examination</option>
+                    <option value="BPC">Blood Pressure Check</option>
+                    <option value="BMI">Body Mass Index (BMI) Measurement</option>
+                    <option value="VT">Vaccinations</option>
+                    <option value="SCT">Skin Check Tests</option>
+                    <option value="EET">Eye Examination Tests</option>
+                    <option value="BDT">Bone Density Test (for Seniors)</option>
+                    <option value="ECG">Electrocardiogram (ECG or EKG)</option>
+                </select>
+                <span id="test_type_error" class="text-danger"></span>
+            </div>
+
+            <div class="inputfeild mb-3">
+                <button type="submit" class="btn btn-outline-primary btn-lg" id="btnSubmit" name="btnSubmit">Submit Details</button>
+            </div>
+        </form>
+    </div>
+    {% include 'footer.html' %}
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js" integrity="sha384-rS5pF5siw5S5n5O0z5n5PvFg5F6F5g5l5i5o5f5f5" crossorigin="anonymous"></script>
+
+    <!-- JavaScript for form validation -->
+    <script type="text/javascript">
+        function validateForm() {
+            var isValid = true;
+
+            // Clear previous errors
+            document.getElementById('patient_id_error').innerHTML = '';
+            document.getElementById('email_error').innerHTML = '';
+            document.getElementById('appointment_date_error').innerHTML = '';
+            document.getElementById('appointment_time_error').innerHTML = '';
+            document.getElementById('test_type_error').innerHTML = '';
+
+            // Validate Patient NIC
+            var patientId = document.getElementById('patient_id').value.trim();
+            if (patientId.length === 0) {
+                document.getElementById('patient_id_error').innerHTML = 'Patient NIC is required.';
+                isValid = false;
+            }
+
+            // Validate Email
+            var email = document.getElementById('email').value.trim();
+            var emailPattern = /^[^ ]+@[^ ]+\.[a-z]{2,3}$/;
+            if (!email.match(emailPattern)) {
+                document.getElementById('email_error').innerHTML = 'Please enter a valid email address.';
+                isValid = false;
+            }
+
+            // Validate Preferred Test Date
+            var appointmentDate = document.getElementById('appointment_date').value.trim();
+            if (appointmentDate.length === 0) {
+                document.getElementById('appointment_date_error').innerHTML = 'Preferred Test Date is required.';
+                isValid = false;
+            }
+
+            // Validate Preferred Test Time
+            var appointmentTime = document.getElementById('appointment_time').value.trim();
+            if (appointmentTime.length === 0) {
+                document.getElementById('appointment_time_error').innerHTML = 'Preferred Test Time is required.';
+                isValid = false;
+            }
+
+            // Validate Regular Checkup Type
+            var testType = document.getElementById('test_type').value;
+            if (testType === "") {
+                document.getElementById('test_type_error').innerHTML = 'Regular Checkup Type is required.';
+                isValid = false;
+            }
+
+            return isValid;
+        }
+    </script>
+</body>
+</html>
