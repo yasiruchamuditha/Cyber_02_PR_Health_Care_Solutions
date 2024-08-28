@@ -1,18 +1,10 @@
-from flask import Flask
-import secrets
-from routes.routes import register_routes
+# app.py
 
-# Initialize the Flask app
-app = Flask(__name__)
-app.secret_key = secrets.token_urlsafe(32)
+from routes import app  # Import the app instance from routes.py
+from model import init_db  # Import the init_db function from model.py
 
-# Initialize the database when the app starts
-with app.app_context():
-    from models.model import init_db
-    init_db()
-
-# Register the routes
-register_routes(app)
+# Initialize the database
+init_db()
 
 if __name__ == "__main__":
     app.run(debug=True)

@@ -16,13 +16,318 @@
     * contact me : https://linktr.ee/yasiruchamuditha for more information.
     -->
 </head>
-<body style="background: url(static/images/4register.png); background-size: cover;">
+<!-- <body style="background: url(static/images/4register.png); background-size: cover;"> -->
+<body></body>
     {% include 'nav.html' %}
-    <div class="container-fluid" id="containerm">
-    <h1>Welcome to the Secure Web System</h1>
-    <p><a href="{{ url_for('login') }}">Login</a> or <a href="{{ url_for('register') }}">Register</a></p>
-    {% include 'footer.html' %}
+    <div class="container-fluid" id="container">
+
+      <!-- ======= Home Section ======= -->
+<!-- <section id="home" class="d-flex align-items-center" style="background: url('static/images/r.jpg') top center; background-size: cover;">
+  <div class="container text-center position-relative" data-aos="fade-in" data-aos-delay="200">
+    <h1 class="display-4">Welcome to Praroz Healthcare</h1>
+    <h2 class="lead">We are a team of Specialized Doctors.<br>"Your devotion and care bring healing, comfort, and hope."</h2>
+    <a href="#about" class="btn-get-started scrollto btn btn-primary btn-lg mt-3">Learn More</a>
+  </div>
+</section> -->
+<!-- End Home -->
+
+<!-- Home -->
+  <!-- <div id="carouselExampleIndicators" class="carousel slide">
+        <div class="carousel-indicators">
+          <button type="button" class="btn btn-outline-secondary btn-lg " data-bs-target="#carouselExampleIndicators" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
+          <button type="button" class="btn btn-outline-secondary btn-lg " data-bs-target="#carouselExampleIndicators" data-bs-slide-to="1" aria-label="Slide 2">hello</button>
+          <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="2" aria-label="Slide 3"></button>
+        </div>
+        <div class="carousel-inner" style="height: 600px;">
+          <div class="carousel-item active">
+            <img src="static/images/r.jpg" class="d-block w-100" alt="...">
+          </div>
+          <div class="carousel-item">
+            <img src="static/images/OIP.jpg" class="d-block w-100" alt="...">
+          </div>
+          <div class="carousel-item">
+            <img src="static/images/OIP.jpg" class="d-block w-100" alt="...">
+          </div>
+        </div>
+        <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide="prev">
+          <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+          <span class="visually-hidden">Previous</span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide="next">
+          <span class="carousel-control-next-icon" aria-hidden="true"></span>
+          <span class="visually-hidden">Next</span>
+        </button>
+    </div> -->
+      <!-- End Home -->
+      <div id="carouselExampleCaptions" class="carousel slide" >
+        <div class="carousel-indicators">
+          <button type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
+          <button type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide-to="1" aria-label="Slide 2"></button>
+          <button type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide-to="2" aria-label="Slide 3"></button>
+        </div>
+        <div class="carousel-inner" >
+          <div class="carousel-item active">
+            <img src="static/images/OIP.jpg"  class="d-block w-100" alt="...">
+            <div class="carousel-caption d-none d-md-block">
+              <h5>First slide label</h5>
+              <p>Some representative placeholder content for the first slide.</p>
+            </div>
+          </div>
+          <div class="carousel-item">
+            <img src="static/images/OIP.jpg"  class="d-block w-100" alt="...">
+            <div class="carousel-caption d-none d-md-block">
+              <h5>Second slide label</h5>
+              <p>Some representative placeholder content for the second slide.</p>
+            </div>
+          </div>
+          <div class="carousel-item">
+            <img src="static/images/OIP.jpg"  class="d-block w-100" alt="...">
+            <div class="carousel-caption d-none d-md-block">
+              <h5>Third slide label</h5>
+              <p>Some representative placeholder content for the third slide.</p>
+            </div>
+          </div>
+        </div>
+        <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide="prev">
+          <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+          <span class="visually-hidden">Previous</span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide="next">
+          <span class="carousel-control-next-icon" aria-hidden="true"></span>
+          <span class="visually-hidden">Next</span>
+        </button>
+      </div>
+
+      <!-- ======= Featured Services Section ======= -->
+<section id="featured-services" class="featured-services">
+  <div class="container" data-aos="fade-up">
+
+    <div class="row">
+      <!-- Existing cards -->
+      <div class="col-md-6 col-lg-3 d-flex align-items-stretch mb-5 mb-lg-0">
+        <div class="icon-box" data-aos="fade-up" data-aos-delay="100">
+          <div class="icon"><i class="fas fa-lock"></i></div>
+          <h4 class="title"><a href="#">Secure Infrastructure</a></h4>
+          <p class="description">We ensure that your infrastructure is fortified against potential threats with our advanced security measures.</p>
+        </div>
+      </div>
+
+      <div class="col-md-6 col-lg-3 d-flex align-items-stretch mb-5 mb-lg-0">
+        <div class="icon-box" data-aos="fade-up" data-aos-delay="200">
+          <div class="icon"><i class="fas fa-shield-alt"></i></div>
+          <h4 class="title"><a href="#">Cybersecurity Training</a></h4>
+          <p class="description">Empower your team with the knowledge to recognize and combat cyber threats effectively.</p>
+        </div>
+      </div>
+      
+      <div class="col-md-6 col-lg-3 d-flex align-items-stretch mb-5 mb-lg-0">
+        <div class="icon-box" data-aos="fade-up" data-aos-delay="300">
+          <div class="icon"><i class="fas fa-user-shield"></i></div>
+          <h4 class="title"><a href="#">Incident Response</a></h4>
+          <p class="description">Our rapid response team is ready to handle any security incident, minimizing impact and ensuring swift recovery.</p>
+        </div>
+      </div>
+
+      <div class="col-md-6 col-lg-3 d-flex align-items-stretch mb-5 mb-lg-0">
+        <div class="icon-box" data-aos="fade-up" data-aos-delay="400">
+          <div class="icon"><i class="fas fa-network-wired"></i></div>
+          <h4 class="title"><a href="#">Network Security</a></h4>
+          <p class="description">Protect your network with our comprehensive security solutions, designed to prevent unauthorized access and breaches.</p>
+        </div>
+      </div>
+
+      <!-- Additional cards -->
+      <div class="col-md-6 col-lg-3 d-flex align-items-stretch mb-5 mb-lg-0">
+        <div class="icon-box" data-aos="fade-up" data-aos-delay="500">
+          <div class="icon"><i class="fas fa-cogs"></i></div>
+          <h4 class="title"><a href="#">Security Audits</a></h4>
+          <p class="description">Conduct thorough security audits to identify vulnerabilities and ensure compliance with industry standards.</p>
+        </div>
+      </div>
+
+      <div class="col-md-6 col-lg-3 d-flex align-items-stretch mb-5 mb-lg-0">
+        <div class="icon-box" data-aos="fade-up" data-aos-delay="600">
+          <div class="icon"><i class="fas fa-cloud-shield-alt"></i></div>
+          <h4 class="title"><a href="#">Cloud Security</a></h4>
+          <p class="description">Safeguard your cloud infrastructure with our advanced cloud security solutions, ensuring data protection and privacy.</p>
+        </div>
+      </div>
+
+      <div class="col-md-6 col-lg-3 d-flex align-items-stretch mb-5 mb-lg-0">
+        <div class="icon-box" data-aos="fade-up" data-aos-delay="700">
+          <div class="icon"><i class="fas fa-server"></i></div>
+          <h4 class="title"><a href="#">Data Encryption</a></h4>
+          <p class="description">Implement robust encryption mechanisms to protect sensitive data, both at rest and in transit.</p>
+        </div>
+      </div>
+
+      <div class="col-md-6 col-lg-3 d-flex align-items-stretch mb-5 mb-lg-0">
+        <div class="icon-box" data-aos="fade-up" data-aos-delay="800">
+          <div class="icon"><i class="fas fa-user-secret"></i></div>
+          <h4 class="title"><a href="#">Threat Intelligence</a></h4>
+          <p class="description">Stay ahead of potential threats with our proactive threat intelligence services, providing real-time insights.</p>
+        </div>
+      </div>
     </div>
+
+  </div>
+</section><!-- End Featured Services Section -->
+
+
+      <h1>Welcome to the Secure Web System</h1>
+      <!-- ======= Featured Services Section ======= -->
+<section id="featured-services" class="featured-services">
+  <div class="container" data-aos="fade-up">
+
+    <div class="row">
+      <div class="col-md-6 col-lg-3 d-flex align-items-stretch mb-5 mb-lg-0">
+        <div class="icon-box" data-aos="fade-up" data-aos-delay="100">
+          <div class="icon"><i class="fas fa-lock"></i></div>
+          <h4 class="title"><a href="#">Secure Infrastructure</a></h4>
+          <p class="description">We ensure that your infrastructure is fortified against potential threats with our advanced security measures.</p>
+        </div>
+      </div>
+
+      <div class="col-md-6 col-lg-3 d-flex align-items-stretch mb-5 mb-lg-0">
+        <div class="icon-box" data-aos="fade-up" data-aos-delay="200">
+          <div class="icon"><i class="fas fa-shield-alt"></i></div>
+          <h4 class="title"><a href="#">Cybersecurity Training</a></h4>
+          <p class="description">Empower your team with the knowledge to recognize and combat cyber threats effectively.</p>
+        </div>
+      </div>
+      
+      <div class="col-md-6 col-lg-3 d-flex align-items-stretch mb-5 mb-lg-0">
+        <div class="icon-box" data-aos="fade-up" data-aos-delay="300">
+          <div class="icon"><i class="fas fa-user-shield"></i></div>
+          <h4 class="title"><a href="#">Incident Response</a></h4>
+          <p class="description">Our rapid response team is ready to handle any security incident, minimizing impact and ensuring swift recovery.</p>
+        </div>
+      </div>
+
+      <div class="col-md-6 col-lg-3 d-flex align-items-stretch mb-5 mb-lg-0">
+        <div class="icon-box" data-aos="fade-up" data-aos-delay="400">
+          <div class="icon"><i class="fas fa-network-wired"></i></div>
+          <h4 class="title"><a href="#">Network Security</a></h4>
+          <p class="description">Protect your network with our comprehensive security solutions, designed to prevent unauthorized access and breaches.</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section><!-- End Featured Services Section -->
+
+<!-- ======= About Us Section ======= -->
+<section id="about" class="about">
+  <div class="container" data-aos="fade-up">
+    <div class="section-title">
+      <h2>About Us</h2>
+      <p>Ceylon Secure Solutions is dedicated to providing top-notch cybersecurity services to protect your business from emerging threats. We combine cutting-edge technology with deep expertise to deliver solutions that ensure your operations remain secure and resilient.</p>
+    </div>
+
+    <div class="row">
+      <div class="col-xl-5 col-lg-6 video-box d-flex justify-content-center align-items-stretch position-relative">
+        <a href="https://youtu.be/h39m-e8JHDc" class="glightbox play-btn mb-4"></a>
+      </div>
+
+      <div class="col-xl-7 col-lg-6 icon-boxes d-flex flex-column align-items-stretch justify-content-center py-5 px-lg-5">
+        <div class="icon-box">
+          <div class="icon"><i class="bx bx-shield"></i></div>
+          <h4 class="title"><a href="#">Our Mission</a></h4>
+          <p class="description">To safeguard our clients' digital assets through innovative and reliable cybersecurity solutions.</p>
+        </div>
+
+        <div class="icon-box">
+          <div class="icon"><i class="bx bx-target-lock"></i></div>
+          <h4 class="title"><a href="#">Our Vision</a></h4>
+          <p class="description">To be the most trusted partner in cybersecurity, recognized for our expertise, integrity, and commitment to excellence.</p>
+        </div>
+
+        <div class="icon-box">
+          <div class="icon"><i class="bx bx-rocket"></i></div>
+          <h4 class="title"><a href="#">Our Values</a></h4>
+          <p class="description">We prioritize security, innovation, and customer satisfaction in everything we do.</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section><!-- End About Us Section -->
+
+
+    <!-- <p><a href="{{ url_for('login') }}">Login</a> or <a href="{{ url_for('register') }}">Register</a></p> -->
+    <div class="container-fluid" style="width: 1200px;height: 800px; margin-top: 50px;">
+      <div class="row">
+          <div class="col-md-4">
+              <div class="card" style="width: 350px;">
+                  <img src="static/images/4register.png" class="card-img-top" alt="...">
+                  <div class="card-body">
+                    <h5 class="card-title">Card title</h5>
+                    <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+                    <a href="#" class="btn btn-primary">Go somewhere</a>
+                  </div>
+                </div>
+          </div>
+  
+          <div class="col-md-4">
+              <div class="card" style="width: 350px;">
+                  <img src="static/images/4register.png" class="card-img-top" alt="...">
+                  <div class="card-body">
+                    <h5 class="card-title">Card title</h5>
+                    <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+                    <a href="#" class="btn btn-primary">Go somewhere</a>
+                  </div>
+                </div>
+          </div>
+  
+          <div class="col-md-4">
+              <div class="card" style="width: 350px;">
+                  <img src="static/images/4register.png" class="card-img-top" alt="...">
+                  <div class="card-body">
+                    <h5 class="card-title">Card title</h5>
+                    <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+                    <a href="#" class="btn btn-primary">Go somewhere</a>
+                  </div>
+                </div>
+          </div>
+      </div>
+  
+      <div class="row">
+          <div class="col-md-4">
+              <div class="card" style="width: 350px;margin-top: 40px;">
+                  <img src="static/images/4register.png" class="card-img-top" alt="...">
+                  <div class="card-body">
+                    <h5 class="card-title">Card title</h5>
+                    <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+                    <a href="#" class="btn btn-primary">Go somewhere</a>
+                  </div>
+                </div>
+          </div>
+  
+          <div class="col-md-4">
+              <div class="card" style="width: 350px;margin-top: 40px;">
+                  <img src="static/images/4register.png" class="card-img-top" alt="...">
+                  <div class="card-body">
+                    <h5 class="card-title">Card title</h5>
+                    <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+                    <a href="#" class="btn btn-primary">Go somewhere</a>
+                  </div>
+                </div>
+          </div>
+  
+          <div class="col-md-4">
+              <div class="card" style="width: 350px;margin-top: 40px;">
+                  <img src="static/images/4register.png" class="card-img-top" alt="...">
+                  <div class="card-body">
+                    <h5 class="card-title">Card title</h5>
+                    <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+                    <a href="#" class="btn btn-primary">Go somewhere</a>
+                  </div>
+                </div>
+          </div>
+      </div>
+  </div>
+    </div>
+    {% include 'footer.html' %}
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js" integrity="sha384-rS5pF5siw5S5n5O0z5n5PvFg5F6F5g5l5i5o5f5f5" crossorigin="anonymous"></script>
 </body>
 </html>
