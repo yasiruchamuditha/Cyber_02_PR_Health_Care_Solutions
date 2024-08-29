@@ -2,7 +2,7 @@
 
 from flask import Flask, request, jsonify, session, redirect, url_for, flash, render_template
 from model import (
-    get_db_connection, get_user_by_username, save_checkup_details, save_user,
+    decrypt_data, get_db_connection, get_user_by_username, save_checkup_details, save_user,
     generate_jwt_token, decode_jwt_token, generate_verification_code,
     send_verification_email, init_db
 )
@@ -316,5 +316,31 @@ def regular_checkup():
         return redirect(url_for('regular_checkup'))
 
     return render_template('regular_checkup.html')
+
+
+@app.route('/checkup/<int:checkup_id>', methods=['GET'])
+def get_checkup_details(checkup_id):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM regular_checkups WHERE id = %s", (checkup_id,))
+    result = cursor.fetchone()
+    
+    if not result:
+        return jsonify({"error": "Checkup details not found"}), 404
+
+    # Decrypt the data
+    decrypted_data = {
+        'patient_nic': decrypt_data(result[1]),
+        'email': decrypt_data(result[2]),
+        'appointment_date': decrypt_data(result[3]),
+        'appointment_time': decrypt_data(result[4]),
+        'test_type': decrypt_data(result[5]),
+        'submitted_at': result[6]
+    }
+
+    cursor.close()
+    conn.close()
+
+    return jsonify(decrypted_data), 200
 
 
