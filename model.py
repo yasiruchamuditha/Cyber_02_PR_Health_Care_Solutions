@@ -167,8 +167,7 @@ def init_db():
     # Create the regular_checkups table
     cursor.execute('''
     CREATE TABLE IF NOT EXISTS regular_checkups (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        patient_nic VARCHAR(255) NOT NULL,
+        patient_nic VARCHAR(255) NOT NULL PRIMARY KEY,
         email VARCHAR(255) NOT NULL,
         appointment_date VARCHAR(255) NOT NULL,
         appointment_time VARCHAR(255) NOT NULL,
