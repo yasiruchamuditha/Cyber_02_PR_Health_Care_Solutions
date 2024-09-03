@@ -60,7 +60,7 @@ def upload_file():
             filename = secure_filename(file.filename)
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
             flash('File successfully uploaded')
-            return redirect(url_for('upload_file'))
+            return redirect(url_for('services'))
     return render_template('upload.html')
 
 
