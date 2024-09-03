@@ -14,6 +14,24 @@ import os
 # Load encryption key from environment variable or secure storage
 key_file = 'encryption_key.key'
 
+# Define the path to the key file
+key_file_upload = 'secret_key.key'
+
+def generate_key():
+    return Fernet.generate_key()
+
+def save_key(key):
+    with open(key_file_upload, 'wb') as key_file:
+        key_file.write(key)
+
+if not os.path.exists(key_file_upload):
+    key = generate_key()
+    save_key(key)
+    print("New secret key generated and saved.")
+else:
+    print("Secret key already exists.")
+
+# Load the existing encryption key or generate a new one for encryption
 def load_or_generate_key():
     if os.path.exists(key_file):
         with open(key_file, 'rb') as f:
@@ -30,6 +48,7 @@ fernet = Fernet(encryption_key)
 
 
 # Database connection function
+# Establish and return a connection to the database.
 def get_db_connection():
     return mysql.connector.connect(
         host='localhost',         # Database host
@@ -103,20 +122,7 @@ def send_verification_email(to_email, code):
     server.quit()
 
 
-# # Function to save checkup details
-# def save_checkup_details(patient_nic, email, appointment_date, appointment_time, test_type):
-#     conn = get_db_connection()
-#     cursor = conn.cursor()
-#     cursor.execute('''
-#         INSERT INTO regular_checkups (patient_nic, email, appointment_date, appointment_time, test_type, submitted_at)
-#         VALUES (%s, %s, %s, %s, %s, %s)
-#     ''', (patient_nic, email, appointment_date, appointment_time, test_type, datetime.utcnow()))
-#     conn.commit()
-#     cursor.close()
-#     conn.close()
-
-
-# Function to save checkup details
+# Function to save checkup details with encryption
 def save_checkup_details(patient_nic, email, appointment_date, appointment_time, test_type):
     conn = get_db_connection()
     cursor = conn.cursor()
@@ -136,13 +142,13 @@ def save_checkup_details(patient_nic, email, appointment_date, appointment_time,
     cursor.close()
     conn.close()
 
-
+# Encrypt the data using Fernet symmetric encryption
 def encrypt_data(data):
     return fernet.encrypt(data.encode())
 
+# Decrypt the encrypted data using Fernet symmetric encryption.
 def decrypt_data(encrypted_data):
     return fernet.decrypt(encrypted_data).decode()
-
 
 
 # Function to initialize the database

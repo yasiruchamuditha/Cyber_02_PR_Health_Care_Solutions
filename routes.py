@@ -8,19 +8,64 @@ from model import (
 )
 
 from datetime import datetime, timedelta
-from werkzeug.security import generate_password_hash, check_password_hash
 import requests
 import secrets
+from werkzeug.utils import secure_filename
+from werkzeug.security import generate_password_hash, check_password_hash
+import os
 
 # Initialize Flask app
 app = Flask(__name__)
-app.secret_key = secrets.token_urlsafe(32)  # Ensure this is in the correct file
+# Ensure this is in the correct file
+app.secret_key = secrets.token_urlsafe(32)  
 
-# Initialize the database
-jwt_secret = secrets.token_urlsafe(32)  # Secret key for JWT
+# Secret key for JWT
+jwt_secret = secrets.token_urlsafe(32)
+# Secret key for RECAPTCHA  
 RECAPTCHA_SECRET_KEY = '6LdyBisqAAAAAFMn8RKKJU3yxIxggaX6kVk1fi5G'  
 
+# Function to load the secret key from a file
+def load_secret_key():
+    key_file_upload = 'secret_key.key'
+    if os.path.exists(key_file_upload):
+        with open(key_file_upload, 'rb') as key_file:
+            return key_file.read()
+    else:
+        raise FileNotFoundError("Secret key file not found.")
+
+# Set up the upload folder and allowed extensions
+UPLOAD_FOLDER = 'static/uploads'
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+app.config['SECRET_KEY'] = load_secret_key()  # Load secret key from file
+
+# Function to check if the uploaded file is allowed
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+# Route to upload prescription
+@app.route('/upload', methods=['GET', 'POST'])
+def upload_file():
+    if request.method == 'POST':
+        # Check if the post request has the file part
+        if 'file' not in request.files:
+            flash('No file part')
+            return redirect(request.url)
+        file = request.files['file']
+        # If the user does not select a file, the browser submits an empty file
+        if file.filename == '':
+            flash('No selected file')
+            return redirect(request.url)
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            flash('File successfully uploaded')
+            return redirect(url_for('upload_file'))
+    return render_template('upload.html')
+
+
 # Routes
+# Index routes.Render the homepage. Check if user is logged in.
 @app.route("/")
 def index():
     if 'jwt_token' in session:
@@ -29,6 +74,7 @@ def index():
             return render_template('index.html', logged_in=True, user=user)
     return render_template('index.html', logged_in=False)
 
+# Render the home page. Check if user is logged in.
 @app.route("/home")
 def home():
     if 'jwt_token' in session:
@@ -37,6 +83,7 @@ def home():
             return render_template('index.html', logged_in=True, user=user)
     return render_template('Login.html', logged_in=False)
 
+# Render the services page. Check if user is logged in.
 @app.route("/services")
 def services():
     if 'jwt_token' in session:
@@ -45,6 +92,7 @@ def services():
             return render_template('Services.html', logged_in=True, user=user)
     return render_template('Login.html', logged_in=False)
 
+# Handle regular checkup form in service page.
 @app.route("/regular_checkup")
 def s_regularCheckup():
     if 'jwt_token' in session:
@@ -53,6 +101,14 @@ def s_regularCheckup():
             return render_template('regular_checkup.html', logged_in=True, user=user)
     return render_template('Login.html', logged_in=False)
 
+# Handle prescriptions form in service page.
+@app.route('/prescriptions')
+def display_prescriptions():
+    # List all files in the uploads directory
+    files = os.listdir(app.config['UPLOAD_FOLDER'])
+    return render_template('prescriptions.html', files=files)
+
+# Handle user registration
 @app.route("/register", methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
@@ -93,6 +149,8 @@ def register():
         return render_template('verification.html')
     return render_template('register.html')
 
+
+# Handle user verification under registration function
 @app.route("/verify", methods=['GET', 'POST'])
 def verify():
     if request.method == 'POST':
@@ -129,7 +187,7 @@ def verify():
         return redirect(url_for('login'))
     return render_template('verify.html')
 
-
+# Handle user login
 @app.route("/login", methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
@@ -213,7 +271,7 @@ def forgot_password():
 
     return render_template('forgot_password.html')
 
-#Route to handle user verify_code
+# Route to handle user verify_code in user account verification
 @app.route("/verify_code", methods=['GET', 'POST'])
 def verify_code():
     if request.method == 'POST':
@@ -254,8 +312,7 @@ def verify_code():
     return render_template('verify_code.html', email=email)
 
 
-
-#Route to handle user reset_password
+# Route to handle user reset_password
 @app.route("/reset_password", methods=['GET', 'POST'])
 def reset_password():
     if 'verified_user' not in session:
@@ -287,14 +344,14 @@ def reset_password():
 
     return render_template('reset_password.html')
 
-
+# Handle user logout
 @app.route('/logout')
 def logout():
     session.pop('jwt_token', None)
     flash("You have been logged out.", "success")
     return redirect(url_for('index'))
 
-
+# Handle regular checkup form and insert regular checkup data with encryption.
 @app.route("/regular_checkup", methods=['GET', 'POST'])
 def regular_checkup():
     # Check if user is logged in
@@ -342,5 +399,25 @@ def get_checkup_details(checkup_id):
     conn.close()
 
     return jsonify(decrypted_data), 200
+
+# Handle regular checkup card view and select regular checkup data with decryption.
+@app.route('/checkups')
+def display_checkups():
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)  # Fetch data as dictionaries
+    cursor.execute("SELECT * FROM regular_checkups")
+    checkups = cursor.fetchall()
+    cursor.close()
+    conn.close()
+
+    # Decrypt the data before passing it to the template
+    for checkup in checkups:
+        checkup['patient_nic'] = decrypt_data(checkup['patient_nic'])
+        checkup['email'] = decrypt_data(checkup['email'])
+        checkup['appointment_date'] = decrypt_data(checkup['appointment_date'])
+        checkup['appointment_time'] = decrypt_data(checkup['appointment_time'])
+        checkup['test_type'] = decrypt_data(checkup['test_type'])
+
+    return render_template('checkups.html', checkups=checkups)
 
 
