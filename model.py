@@ -182,6 +182,49 @@ def init_db():
     )
     ''')
 
+    # Create the user_sessions table
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS user_sessions  (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        user_id INT NOT NULL,
+        login_time DATETIME NOT NULL,
+        logout_time DATETIME,
+        FOREIGN KEY (user_id) REFERENCES users(id),
+        submitted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP           
+    )
+    ''')
+
+    # Create the user_actions table
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS user_actions   (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    action_type VARCHAR(255) NOT NULL,
+    action_time DATETIME NOT NULL,
+    details TEXT,
+    FOREIGN KEY (user_id) REFERENCES users(id),
+    submitted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP           
+    )
+    ''')
+
+
+  # Create the database_audit  table
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS database_audit    (
+     id INT AUTO_INCREMENT PRIMARY KEY,
+    table_name VARCHAR(255) NOT NULL,
+    record_id INT NOT NULL,
+    change_type ENUM('INSERT', 'UPDATE', 'DELETE') NOT NULL,
+    change_time DATETIME NOT NULL,
+    changed_by INT NOT NULL,
+    old_values TEXT,
+    new_values TEXT,
+    FOREIGN KEY (changed_by) REFERENCES users(id),
+    submitted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP           
+    )
+    ''')
+
+
     conn.commit()
     cursor.close()
     conn.close()
