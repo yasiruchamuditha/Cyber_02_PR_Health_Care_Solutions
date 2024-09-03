@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Regular Checkups</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container mt-5">
+        <h2 class="mb-4">Regular Checkups</h2>
+        <div class="row">
+            {% for checkup in checkups %}
+            <div class="col-md-4">
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title">Patient NIC: {{ checkup.patient_nic }}</h5>
+                        <p class="card-text">
+                            <strong>Email:</strong> {{ checkup.email }}<br>
+                            <strong>Appointment Date:</strong> {{ checkup.appointment_date }}<br>
+                            <strong>Appointment Time:</strong> {{ checkup.appointment_time }}<br>
+                            <strong>Test Type:</strong> {{ checkup.test_type }}<br>
+                            <strong>Submitted At:</strong> {{ checkup.submitted_at }}
+                        </p>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</body>
+</html>

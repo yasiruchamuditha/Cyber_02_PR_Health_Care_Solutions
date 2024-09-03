@@ -1,0 +1,47 @@
+<!-- templates/checkup_card.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkup Details</title>
+    <style>
+        .card {
+            max-width: 400px;
+            margin: 20px auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            background-color: #f9f9f9;
+        }
+        .card h2 {
+            margin-top: 0;
+            font-size: 1.5em;
+            color: #333;
+        }
+        .card p {
+            margin: 10px 0;
+            color: #555;
+        }
+        .card p strong {
+            color: #000;
+        }
+    </style>
+</head>
+<body>
+    <h1>Regular Checkup Details</h1>
+    {% if checkup %}
+        <div class="card">
+            <h2>Patient NIC: {{ checkup.patient_nic }}</h2>
+            <p><strong>Email:</strong> {{ checkup.email }}</p>
+            <p><strong>Appointment Date:</strong> {{ checkup.appointment_date }}</p>
+            <p><strong>Appointment Time:</strong> {{ checkup.appointment_time }}</p>
+            <p><strong>Test Type:</strong> {{ checkup.test_type }}</p>
+            <p><strong>Submitted At:</strong> {{ checkup.submitted_at }}</p>
+        </div>
+    {% else %}
+        <p>No checkup details found.</p>
+    {% endif %}
+</body>
+</html>

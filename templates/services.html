@@ -25,9 +25,9 @@
             <div class="card" style="width: 350px;">
                 <img src="static/images/4register.png" class="card-img-top" alt="...">
                 <div class="card-body">
-                  <h5 class="card-title">Card title</h5>
+                  <h5 class="card-title">Reserve Checkup</h5>
                   <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
-                  <a href="#" class="btn btn-primary">Go somewhere</a>
+                  <a href="{{ url_for('s_regularCheckup') }}" class="btn btn-primary">Go somewhere</a>
                 </div>
               </div>
         </div>
@@ -36,9 +36,9 @@
             <div class="card" style="width: 350px;">
                 <img src="static/images/4register.png" class="card-img-top" alt="...">
                 <div class="card-body">
-                  <h5 class="card-title">Card title</h5>
+                  <h5 class="card-title">View Checkup</h5>
                   <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
-                  <a href="#" class="btn btn-primary">Go somewhere</a>
+                  <a href="{{ url_for('display_checkups') }}" class="btn btn-primary">Go somewhere</a>
                 </div>
               </div>
         </div>
@@ -47,9 +47,9 @@
             <div class="card" style="width: 350px;">
                 <img src="static/images/4register.png" class="card-img-top" alt="...">
                 <div class="card-body">
-                  <h5 class="card-title">Card title</h5>
+                  <h5 class="card-title">Save Prescriptions</h5>
                   <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
-                  <a href="#" class="btn btn-primary">Go somewhere</a>
+                  <a href="{{ url_for('upload_file') }}" class="btn btn-primary">Go somewhere</a>
                 </div>
               </div>
         </div>
@@ -60,9 +60,9 @@
             <div class="card" style="width: 350px;margin-top: 40px;">
                 <img src="static/images/4register.png" class="card-img-top" alt="...">
                 <div class="card-body">
-                  <h5 class="card-title">Card title</h5>
+                  <h5 class="card-title">View Prescriptions</h5>
                   <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
-                  <a href="#" class="btn btn-primary">Go somewhere</a>
+                  <a href="{{ url_for('display_prescriptions') }}" class="btn btn-primary">Go somewhere</a>
                 </div>
               </div>
         </div>
