@@ -44,24 +44,59 @@ def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 # Route to upload prescription
+# Route to upload prescription
 @app.route('/upload', methods=['GET', 'POST'])
 def upload_file():
+    # Check if the user is logged in
+    if 'jwt_token' not in session:
+        flash("You need to log in to upload a prescription.", "warning")
+        return redirect(url_for('login'))
+    
     if request.method == 'POST':
         # Check if the post request has the file part
         if 'file' not in request.files:
-            flash('No file part')
+            flash('No file part', 'danger')
             return redirect(request.url)
+        
         file = request.files['file']
+        
         # If the user does not select a file, the browser submits an empty file
         if file.filename == '':
-            flash('No selected file')
+            flash('No selected file', 'danger')
             return redirect(request.url)
+        
+        # Check if the file is allowed (correct extension)
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
+            # Save the file to the specified upload folder
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-            flash('File successfully uploaded')
+            flash('File successfully uploaded', 'success')
             return redirect(url_for('services'))
+        else:
+            flash('Invalid file format. Please upload a valid image file.', 'danger')
+            return redirect(request.url)
+    
     return render_template('upload.html')
+
+# @app.route('/upload', methods=['GET', 'POST'])
+# def upload_file():
+#     if request.method == 'POST':
+#         # Check if the post request has the file part
+#         if 'file' not in request.files:
+#             flash('No file part')
+#             return redirect(request.url)
+#         file = request.files['file']
+#         # If the user does not select a file, the browser submits an empty file
+#         if file.filename == '':
+#             flash('No selected file')
+#             return redirect(request.url)
+#         if file and allowed_file(file.filename):
+#             filename = secure_filename(file.filename)
+#             file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+#             flash('File successfully uploaded')
+#             return redirect(url_for('services'))
+#     return render_template('upload.html')
+
 
 
 # Routes
@@ -99,6 +134,7 @@ def s_regularCheckup():
         user = decode_jwt_token(session['jwt_token'], jwt_secret)
         if user:
             return render_template('regular_checkup.html', logged_in=True, user=user)
+    flash("You need to log in to book a checkup.", "warning")    
     return render_template('Login.html', logged_in=False)
 
 # Handle prescriptions form in service page.
