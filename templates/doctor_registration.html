@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-4bw+/aepP/YC94hEpVNVgiZdgIC5+VKNBQNGCHeKRQN+PtmoHDEXuppvnDJzQIu9" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-HwwvtgBNo3bZJJLYd8oVXjrBZt8cqVSpeBNS5n7C8IVInixGAoxmnlMuBnhbgrkm" crossorigin="anonymous"></script>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static' , filename = 'css/style.css')}}">
+    <title>PR SECURE SOLUTIONS - REGISTRATION</title>
+    <link rel="icon" type="images/x-icon" href="https://cdn4.iconfinder.com/data/icons/social-messaging-ui-color-and-shapes-1/177800/01-1024.png" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.0/css/all.min.css" rel="stylesheet">
+    <link href="https://unpkg.com/boxicons@2.1.2/css/boxicons.min.css" rel="stylesheet"/>
+    <!--
+   * @author Yasiru
+   * contact me : https://linktr.ee/yasiruchamuditha for more information.
+   -->
+</head>
+<body style="background: url(static/images/4register.png); background-size: cover;">
+    {% include 'nav.html' %}
+    <div class="container-fluid" id="containerm">
+        <h1>SIGN UP</h1>
+        <!-- flashed messages code -->
+        {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <ul class="feedback-messages">
+                {% for message in messages %}
+                    <li>{{ message }}</li>
+                {% endfor %}
+            </ul>
+
+            <script>
+                function showAlert(message) {
+                    var alertPopup = document.getElementById("alert-popup");
+                    alertPopup.textContent = message;
+                    alertPopup.style.display = "block";
+                    setTimeout(function () {
+                        alertPopup.style.display = "none";
+                    }, 5000);
+                }
+                var messages = document.querySelectorAll(".feedback-messages li");
+                if (messages.length > 0) {
+                    messages.forEach(function (messageElement) {
+                        showAlert(messageElement.textContent);
+                    });
+                }
+            </script>
+        {% endif %}
+        {% endwith %}
+
+        <!-- popup -->
+       <div id="alert-popup" class="alert-popup"></div>
+
+        <form class="row g-3 needs-validation" name="frmUserRegistration" method="POST" autocomplete="off" action="/register" onsubmit="return result()" novalidate>
+            <div class="inputfeild mt-3 ">
+                <label class="form-label mb-2">UserEmail:</label>
+                <input type="email" class="form-control" name="txtUserEmail" id="txtUserEmail" placeholder="Enter Your Email" onkeyup="validateUserEmail()" required>
+                <span id="UserEmail_Error"></span>
+                <div class="invalid-feedback">Please provide a valid email.</div>
+            </div>
+
+            <div class="inputfeild mt-3">
+                <label class="form-label mb-2">Medical License Number:</label>
+                <input type="text" class="form-control" name="txtMedicalNo" id="txtMedicalNo" placeholder="Enter Your Medical License Number" required>
+                <div class="invalid-feedback">Please provide your medical license number.</div>
+            </div>
+
+            <div class="inputfeild mb-3">
+                <label for="doctor" class="form-label">Specialization:</label>
+                <select id="doctor" name="Specialization" class="form-select" required>
+                    <option value="" disabled selected>Select Your Specialization</option>
+                    <option value="Cardiology">Cardiology</option>
+                    <option value="Neurology">Neurology</option>
+                    <option value="Oncology">Oncology</option>
+                    <option value="Orthopedics">Orthopedics</option>
+                    <option value="Gastroenterology">Gastroenterology</option>
+                    <option value="Pulmonology">Pulmonology</option>
+                    <option value="Endocrinology">Endocrinology</option>
+                    <option value="Nephrology">Nephrology</option>
+                    <option value="Infectious_Disease">Infectious Disease</option>
+                    <option value="Obstetrics">Obstetrics</option>
+                    <option value="Pediatrics">Pediatrics</option>
+                    <option value="Psychiatry">Psychiatry</option>
+                    <option value="Gynecology">Gynecology</option>
+                    <option value="Emergency_Care">Emergency Care</option>
+                    <option value="Dentists">Dentists</option>
+                </select>
+                <div class="invalid-feedback">Please select your specialization.</div>
+            </div>
+
+            <div class="inputfeild mt-3">
+                <label class="form-label mb-2">Year of Graduation:</label>
+                <input type="text" class="form-control" name="txtGYears" id="txtGYears" placeholder="Enter Your Year of Graduation" required>
+                <div class="invalid-feedback">Please provide your year of graduation.</div>
+            </div>
+
+            <div class="inputfeild mt-3">
+                <label class="form-label mb-2">Total Years of Experience:</label>
+                <input type="text" class="form-control" name="txtEYears" id="txtEYears" placeholder="Enter Your Total Years of Experience" required>
+                <div class="invalid-feedback">Please provide your total years of experience.</div>
+            </div>
+
+            <div class="inputfeild mt-3">
+                <label class="form-label mb-2">Current Workplace/Hospital:</label>
+                <input type="text" class="form-control" name="txtWorkplace" id="txtWorkplace" placeholder="Enter Your Current Workplace/Hospital" required>
+                <div class="invalid-feedback">Please provide your current workplace/hospital.</div>
+            </div>
+
+            <div class="inputfeild mt-3">
+                <label class="form-label mb-2">Work Address:</label>
+                <input type="text" class="form-control" name="txtWorkAddress" id="txtWorkAddress" placeholder="Enter Your Work Address" required>
+                <div class="invalid-feedback">Please provide your work address.</div>
+            </div>
+
+            <button type="submit" class="btn btn-outline-primary btn-lg" id="btnSubmit" name="btnSubmit">Submit Details</button>
+
+        </form>
+    </div>
+    {% include 'footer.html' %}
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js" integrity="sha384-rS5pF5siw5S5n5O0z5n5PvFg5F6F5g5l5i5o5f5f5" crossorigin="anonymous"></script>
+
+    <!--validation user inputs-->
+    <script type="text/javascript">
+        var UserEmail_Error = document.getElementById('UserEmail_Error');
+        
+        function validateUserEmail() {
+            var Email = document.getElementById('txtUserEmail').value.trim();
+            if (Email.length == 0) {
+                UserEmail_Error.innerHTML = 'User Email is required.';
+                return false;
+            } else {
+                var emailPattern = /^[^ ]+@[^ ]+\.[a-z]{2,3}$/;
+                if (!Email.match(emailPattern)) {
+                    UserEmail_Error.innerHTML = 'Please enter a valid email.';
+                    return false;
+                }
+                UserEmail_Error.innerHTML = '<i class="fa-regular fa-circle-check"></i>';
+                return true;
+            }
+        }
+
+        function result() {
+            return validateUserEmail();
+        }
+    </script>
+</body>
+</html>
