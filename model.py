@@ -121,7 +121,6 @@ def send_verification_email(to_email, code):
     server.sendmail(from_email, to_email, text)
     server.quit()
 
-
 # Function to save checkup details with encryption
 def save_checkup_details(patient_nic, email, appointment_date, appointment_time, test_type):
     conn = get_db_connection()
@@ -151,6 +150,32 @@ def decrypt_data(encrypted_data):
     return fernet.decrypt(encrypted_data).decode()
 
 
+
+
+# Function to save doctor details with encryption
+def save_doctor_details(user_email, medical_no, specialization, grad_year, experience_years,workplace,work_address):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    encrypted_email = encrypt_data(user_email)
+    encrypted_medical_no = encrypt_data(medical_no)
+    encrypted_specialization = encrypt_data(specialization)
+    encrypted_grad_year = encrypt_data(grad_year)
+    encrypted_experience_years = encrypt_data(experience_years)
+    encrypted_workplace = encrypt_data(workplace)
+    encrypted_work_address = encrypt_data(work_address)
+
+    cursor.execute('''
+        INSERT INTO doctors (user_email, medical_no, specialization, grad_year, experience_years, workplace, work_address, submitted_at)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+    ''', (encrypted_email, encrypted_medical_no, encrypted_specialization, encrypted_grad_year, encrypted_experience_years,encrypted_workplace, encrypted_work_address, datetime.utcnow()))
+
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+    
+
 # Function to initialize the database
 def init_db():
     conn = get_db_connection()
@@ -178,6 +203,20 @@ def init_db():
         appointment_date VARCHAR(255) NOT NULL,
         appointment_time VARCHAR(255) NOT NULL,
         test_type VARCHAR(255) NOT NULL,
+        submitted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+    ''')
+
+    # Create the doctors table
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS doctors (
+        user_email VARCHAR(255) NOT NULL PRIMARY KEY,
+        medical_no VARCHAR(255) NOT NULL,
+        specialization VARCHAR(255) NOT NULL,
+        grad_year VARCHAR(4) NOT NULL,
+        experience_years VARCHAR(4) NOT NULL,
+        workplace VARCHAR(255) NOT NULL,
+        work_address TEXT NOT NULL,
         submitted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )
     ''')

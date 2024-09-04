@@ -4,7 +4,7 @@ from flask import Flask, request, jsonify, session, redirect, url_for, flash, re
 from model import (
     decrypt_data, get_db_connection, get_user_by_username, save_checkup_details, save_user,
     generate_jwt_token, decode_jwt_token, generate_verification_code,
-    send_verification_email, init_db
+    send_verification_email,save_doctor_details, init_db
 )
 
 from datetime import datetime, timedelta
@@ -223,6 +223,7 @@ def verify():
         return redirect(url_for('login'))
     return render_template('verify.html')
 
+
 # Handle user login
 @app.route("/login", methods=['GET', 'POST'])
 def login():
@@ -265,15 +266,31 @@ def login():
         if not check_password_hash(hashed_password, password):
             flash("Incorrect password!", "danger")
             return redirect(url_for('login'))
+        
+        # Determine the user's role
+        user_role  = user[3]  # Assuming 'role' is in the sixth column
 
         # If login is successful, generate a JWT token
         token = generate_jwt_token(username, jwt_secret)
         session['jwt_token'] = token
+        session['user_role'] = user_role  
+
         flash("Login successful!", "success")
-        return redirect(url_for('index'))
+        #return redirect(url_for('index'))
+        if user_role == 'admin':
+            return redirect(url_for('admin_dashboard'))  # Redirect to admin dashboard
+        else:
+            return redirect(url_for('index'))  # Redirect to regular user index
 
     return render_template('login.html')
 
+# Route to handle admin dashboard
+@app.route("/admin_dashboard")
+def admin_dashboard():
+    if 'jwt_token' not in session or session['user_role'] != 'admin':
+        flash("Access denied. Admins only.", "danger")
+        return redirect(url_for('login'))
+    return render_template('admin_dashboard.html')
 
 # Route to handle user forgot_password
 @app.route("/forgot_password", methods=['GET', 'POST'])
@@ -455,5 +472,32 @@ def display_checkups():
         checkup['test_type'] = decrypt_data(checkup['test_type'])
 
     return render_template('checkups.html', checkups=checkups)
+
+
+
+# Handle doctor registration form and insert doctor registration data with encryption.
+@app.route("/register_doctor", methods=['GET', 'POST'])
+def register_doctor():
+    # Check if user is logged in
+    if 'jwt_token' not in session:
+        flash("You need to log in to access this page.", "warning")
+        return redirect(url_for('login'))
+
+    if request.method == 'POST':
+        user_email = request.form['txtUserEmail']
+        medical_no = request.form['txtMedicalNo']
+        specialization = request.form['Specialization']
+        grad_year = request.form['txtGYears']
+        experience_years = request.form['txtEYears']
+        workplace = request.form['txtWorkplace']
+        work_address = request.form['txtWorkAddress']
+
+        # Save the doctor details in the database
+        save_doctor_details(user_email, medical_no, specialization, grad_year, experience_years, workplace, work_address)
+
+        flash("Your checkup details have been submitted successfully!", "success")
+        return redirect(url_for('register_doctor'))
+
+    return render_template('register_doctor.html')
 
 

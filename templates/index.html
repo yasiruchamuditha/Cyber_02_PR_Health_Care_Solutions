@@ -201,7 +201,7 @@
   <div class="container" data-aos="fade-up">
     <div class="section-title">
       <h1 style="margin: 20px 0 20px 0;">About Us</h1>
-      <p>Ceylon Secure Solutions is dedicated to providing top-notch cybersecurity services to protect your business from emerging threats. We combine cutting-edge technology with deep expertise to deliver solutions that ensure your operations remain secure and resilient.</p>
+      <p>At PR CARE Health Solutions, we are devoted to enhancing the quality of healthcare through innovative technology and compassionate care. Our mission is to provide seamless, accessible, and personalized health solutions that empower individuals and communities to lead healthier lives.</p>
     </div>
 
     <div class="row">
@@ -213,27 +213,28 @@
       <!-- Right side with content -->
       <div class="col-xl-7 col-lg-6 icon-boxes d-flex flex-column align-items-stretch justify-content-center py-5 px-lg-5">
         <div class="icon-box">
-          <div class="icon"><i class="bx bx-shield"></i></div>
-          <h4 class="title"><a href="#">Our Mission</a></h4>
-          <p class="description">To safeguard our clients' digital assets through innovative and reliable cybersecurity solutions.</p>
-        </div>
+          <div class="icon"><i class="bx bx-heart"></i></div>
+          <h4 class="title">Our Mission</h4>
+          <p class="description">To revolutionize healthcare by providing cutting-edge solutions that are both effective and accessible, ensuring the well-being of every individual we serve.</p>
+        </div><br>
 
         <div class="icon-box">
-          <div class="icon"><i class="bx bx-target-lock"></i></div>
-          <h4 class="title"><a href="#">Our Vision</a></h4>
-          <p class="description">To be the most trusted partner in cybersecurity, recognized for our expertise, integrity, and commitment to excellence.</p>
-        </div>
+          <div class="icon"><i class="bx bx-globe"></i></div>
+          <h4 class="title">Our Vision</h4>
+          <p class="description">To be a global leader in healthcare innovation, recognized for our commitment to improving lives through technology and care.</p>
+        </div><br>
 
         <div class="icon-box">
-          <div class="icon"><i class="bx bx-rocket"></i></div>
-          <h4 class="title"><a href="#">Our Values</a></h4>
-          <p class="description">We prioritize security, innovation, and customer satisfaction in everything we do.</p>
+          <div class="icon"><i class="bx bx-medal"></i></div>
+          <h4 class="title">Our Values</h4>
+          <p class="description">We value compassion, integrity, and excellence in every aspect of our work, always putting the needs of our patients and clients first.</p>
         </div>
       </div>
     </div>
 
   </div>
 </section><!-- End About Us Section -->
+
 <br>
 <br>
 <h1 style="margin: 20px 0 20px 0;">Our Services</h1>
@@ -280,9 +281,9 @@
           <div class="card" style="width: 350px; margin-top: 50px;">
               <img src="static/images/t1.jpg" class="card-img-top" alt="E-Test Report" style="height: 200px; object-fit: cover;">
               <div class="card-body">
-                <h5 class="card-title">E-Test Report</h5>
+                <h5 class="card-title">My E-Checkup Tracking</h5>
                 <p class="card-text">Access your medical test results securely online, saving time and avoiding the need for physical reports.</p>
-                <a href="#" class="btn btn-primary">Learn more</a>
+                <a href="{{ url_for('display_checkups') }}" class="btn btn-primary">Learn more</a>
               </div>
             </div>
       </div>
@@ -291,9 +292,9 @@
           <div class="card" style="width: 350px; margin-top: 50px;">
               <img src="static/images/che1.jpg" class="card-img-top" alt="E-Health Tracking" style="height: 200px; object-fit: cover;">
               <div class="card-body">
-                <h5 class="card-title">E-Health Tracking</h5>
+                <h5 class="card-title">My E-Prescription Tracking</h5>
                 <p class="card-text">Track your health metrics online, keeping you informed and proactive about your well-being.</p>
-                <a href="#" class="btn btn-primary">Learn more</a>
+                <a href="{{ url_for('display_prescriptions') }}" class="btn btn-primary">Learn more</a>
               </div>
             </div>
       </div>
