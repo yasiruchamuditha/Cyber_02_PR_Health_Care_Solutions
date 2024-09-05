@@ -57,29 +57,29 @@ def get_db_connection():
         database='flask_auth_db'  # Database name
     )
 
-# Function to fetch a user by username
-def get_user_by_username(username):
+# Function to fetch a user by UserEmail
+def get_user_by_UserEmail(UserEmail):
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute("SELECT * FROM users WHERE username = %s", (username,))
+    cursor.execute("SELECT * FROM users WHERE UserEmail = %s", (UserEmail,))
     user = cursor.fetchone()
     cursor.close()
     conn.close()
     return user
 
 # Function to save a new user
-def save_user(username, User_Role, hashed_password):
+def save_user(UserEmail, User_Role, hashed_password):
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute("INSERT INTO users (username,User_Role, password) VALUES (%s,%s,%s)", (username, User_Role, hashed_password))
+    cursor.execute("INSERT INTO users (UserEmail,User_Role, password) VALUES (%s,%s,%s)", (UserEmail, User_Role, hashed_password))
     conn.commit()
     cursor.close()
     conn.close()
 
 # Function to generate a JWT token
-def generate_jwt_token(username, jwt_secret):
+def generate_jwt_token(UserEmail, jwt_secret):
     payload = {
-        'user': username,
+        'user': UserEmail,
         'exp': datetime.utcnow() + timedelta(hours=1)  # Token expires in 1 hour
     }
     token = jwt.encode(payload, jwt_secret, algorithm='HS256')
@@ -150,8 +150,6 @@ def decrypt_data(encrypted_data):
     return fernet.decrypt(encrypted_data).decode()
 
 
-
-
 # Function to save doctor details with encryption
 def save_doctor_details(user_email, medical_no, specialization, grad_year, experience_years,workplace,work_address):
     conn = get_db_connection()
@@ -184,8 +182,7 @@ def init_db():
     # Create the users table
     cursor.execute('''
     CREATE TABLE IF NOT EXISTS users (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        username VARCHAR(255) UNIQUE NOT NULL,
+        UserEmail VARCHAR(255) PRIMARY KEY  NOT NULL,
         password VARCHAR(255) NOT NULL,
         user_role VARCHAR(255) NOT NULL DEFAULT 'user',
         verification_code VARCHAR(6),  -- Column to store the verification code
@@ -225,10 +222,10 @@ def init_db():
     cursor.execute('''
     CREATE TABLE IF NOT EXISTS user_sessions  (
         id INT AUTO_INCREMENT PRIMARY KEY,
-        user_id INT NOT NULL,
+        user_id VARCHAR(255) NOT NULL,
         login_time DATETIME NOT NULL,
         logout_time DATETIME,
-        FOREIGN KEY (user_id) REFERENCES users(id),
+        FOREIGN KEY (user_id) REFERENCES users(UserEmail),
         submitted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP           
     )
     ''')
@@ -237,11 +234,11 @@ def init_db():
     cursor.execute('''
     CREATE TABLE IF NOT EXISTS user_actions   (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id INT NOT NULL,
+    user_id VARCHAR(255) NOT NULL,
     action_type VARCHAR(255) NOT NULL,
     action_time DATETIME NOT NULL,
     details TEXT,
-    FOREIGN KEY (user_id) REFERENCES users(id),
+    FOREIGN KEY (user_id) REFERENCES users(UserEmail),
     submitted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP           
     )
     ''')
@@ -250,15 +247,15 @@ def init_db():
   # Create the database_audit  table
     cursor.execute('''
     CREATE TABLE IF NOT EXISTS database_audit    (
-     id INT AUTO_INCREMENT PRIMARY KEY,
+    id INT AUTO_INCREMENT PRIMARY KEY,
     table_name VARCHAR(255) NOT NULL,
     record_id INT NOT NULL,
     change_type ENUM('INSERT', 'UPDATE', 'DELETE') NOT NULL,
     change_time DATETIME NOT NULL,
-    changed_by INT NOT NULL,
+    changed_by VARCHAR(255) NOT NULL,
     old_values TEXT,
     new_values TEXT,
-    FOREIGN KEY (changed_by) REFERENCES users(id),
+    FOREIGN KEY (changed_by) REFERENCES users(UserEmail),
     submitted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP           
     )
     ''')

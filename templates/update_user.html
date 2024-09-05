@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Update User</title>
+</head>
+<body>
+    <h1>Update User</h1>
+    <form method="POST">
+        <label for="user_role">User Role:</label>
+        <select id="user_role" name="user_role">
+            <option value="user" {% if user.user_role == 'user' %}selected{% endif %}>User</option>
+            <option value="admin" {% if user.user_role == 'admin' %}selected{% endif %}>Admin</option>
+        </select><br>
+
+        <label for="is_verified">Verification Status:</label>
+        <select id="is_verified" name="is_verified">
+            <option value="1" {% if user.is_verified == 1 %}selected{% endif %}>Verified</option>
+            <option value="0" {% if user.is_verified == 0 %}selected{% endif %}>Unverified</option>
+        </select><br>
+
+        <button type="submit">Update</button>
+    </form>
+</body>
+</html>

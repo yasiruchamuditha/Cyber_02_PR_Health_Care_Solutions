@@ -18,8 +18,8 @@
 </head>
 <body style="background: url(static/images/4register.png); background-size: cover;">
     {% include 'nav.html' %}
-    <div class="container-fluid" id="containerm">
-        <h1>Account Verification</h1>
+    <div class="container-fluid" id="containerm" style="margin-bottom: 200px;">
+        <h1>User Account Verification</h1>
         <!-- flashed messages code -->
         {% with messages = get_flashed_messages() %}
         {% if messages %}
@@ -58,14 +58,14 @@
        <div id="alert-popup" class="alert-popup"></div>
 
         <form class="row g-3 needs-validation" name="frmaccountverification" method="POST" autocomplete="off" action="{{ url_for('verify') }}" onsubmit="return result()" >
-            <div class="inputfeild mt-3 ">
+            <div class="inputfeild mt-4 ">
                 <label class="form-label mb-2">UserEmail:</label>
-                <input type="email" class="form-control" name="txtUSerEmail" id="txtUSerEmail" placeholder="Enter Your UserEmail" onkeyup="validateUserEmail()">
+                <input type="email" class="form-control" name="txtUserEmail" id="txtUserEmail" placeholder="Enter Your UserEmail" onkeyup="validateUserEmail()">
                 <span id="UserEmail_Error"></span>
             </div>
       
       
-            <div class="inputfeild mt-3">
+            <div class="inputfeild mt-4">
                 <label class="form-label mb-2">Verification Code:</label>
                 <div class="input-group">
                     <input type="text" class="form-control" name="txtVerificationCode" id="txtVerificationCode" placeholder="Enter Verification Code" onkeyup="validateVerificationCode()">
@@ -89,7 +89,7 @@
     //validate user Email
     function validateUserEmail()
     {
-      var Email = document.getElementById('txtUSerEmail').value.replace(/^\s+|\s+$/g, "");
+      var Email = document.getElementById('txtUserEmail').value.replace(/^\s+|\s+$/g, "");
       if (Email.length == 0) 
       {
         UserEmail_Error.innerHTML='User Email is required.';
