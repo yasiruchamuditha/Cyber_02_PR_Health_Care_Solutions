@@ -274,13 +274,6 @@ def login():
 
     return render_template('login.html')
 
-# Route to handle admin dashboard
-@app.route("/admin_dashboard")
-def admin_dashboard():
-    if 'jwt_token' not in session or session['user_role'] != 'admin':
-        flash("Access denied. Admins only.", "danger")
-        return redirect(url_for('login'))
-    return render_template('admin_dashboard.html')
 
 # Route to handle user forgot_password
 @app.route("/forgot_password", methods=['GET', 'POST'])
@@ -387,7 +380,7 @@ def reset_password():
 
     return render_template('reset_password.html')
 
-# Handle user logout
+# Handle user logout user page
 @app.route('/logout')
 def logout():
     session.pop('jwt_token', None)
@@ -486,8 +479,226 @@ def register_doctor():
         save_doctor_details(user_email, medical_no, specialization, grad_year, experience_years, workplace, work_address)
 
         flash("Your checkup details have been submitted successfully!", "success")
-        return redirect(url_for('register_doctor'))
+        return redirect(url_for('admin_dashboard'))
 
     return render_template('register_doctor.html')
 
+# Route to display the users in table view
+@app.route('/admin/users')
+def user_management():
+    connection = get_db_connection()
+    cursor = connection.cursor(dictionary=True)
+    cursor.execute("SELECT * FROM users")
+    users = cursor.fetchall()
+    cursor.close()
+    connection.close()
+    return render_template('user_management.html', users=users)
 
+# Route to delete a user based on their email (primary key)
+@app.route('/admin/users/delete/<UserEmail>', methods=['POST'])
+def delete_user(UserEmail):
+    connection = get_db_connection()
+    cursor = connection.cursor()
+    cursor.execute("DELETE FROM users WHERE UserEmail = %s", (UserEmail,))
+    connection.commit()
+    cursor.close()
+    connection.close()
+    flash('User deleted successfully!')
+    return redirect(url_for('user_management'))
+
+# Route to delete a user based on their user ID
+# @app.route('/admin/users/delete/<int:user_id>', methods=['POST'])
+# def delete_user(user_id):
+#     connection = get_db_connection()
+#     cursor = connection.cursor()
+#     cursor.execute("DELETE FROM users WHERE id = %s", (user_id,))
+#     connection.commit()
+#     cursor.close()
+#     connection.close()
+#     flash('User deleted successfully!')
+#     return redirect(url_for('user_management'))
+
+
+# Route to update a user
+@app.route('/admin/users/update/<UserEmail>', methods=['GET', 'POST'])
+def update_user(UserEmail):
+    connection = get_db_connection()
+    cursor = connection.cursor(dictionary=True)
+
+    if request.method == 'POST':
+        user_role = request.form['user_role']
+        is_verified = request.form['is_verified']
+
+        cursor.execute("""
+            UPDATE users 
+            SET user_role = %s, is_verified = %s 
+            WHERE UserEmail = %s
+        """, (user_role, is_verified, UserEmail))
+        connection.commit()
+        flash('User updated successfully!')
+        return redirect(url_for('user_management'))
+
+    cursor.execute("SELECT * FROM users WHERE UserEmail = %s", (UserEmail,))
+    user = cursor.fetchone()
+    cursor.close()
+    connection.close()
+    return render_template('update_user.html', user=user)
+
+# Route to update a user based on their user ID
+# @app.route('/admin/users/update/<int:user_id>', methods=['GET', 'POST'])
+# def update_user(user_id):
+#     connection = get_db_connection()
+#     cursor = connection.cursor(dictionary=True)
+
+#     if request.method == 'POST':
+#         user_role = request.form['user_role']
+#         is_verified = request.form['is_verified']
+
+#         cursor.execute("""
+#             UPDATE users 
+#             SET user_role = %s, is_verified = %s 
+#             WHERE id = %s
+#         """, (user_role, is_verified, user_id))
+#         connection.commit()
+#         flash('User updated successfully!')
+#         return redirect(url_for('user_management'))
+
+#     cursor.execute("SELECT * FROM users WHERE id = %s", (user_id,))
+#     user = cursor.fetchone()
+#     cursor.close()
+#     connection.close()
+#     return render_template('update_user.html', user=user)
+
+
+# Route to handle admin dashboard route in login method
+@app.route("/admin_dashboard")
+def admin_dashboard():
+    if 'jwt_token' not in session or session['user_role'] != 'admin':
+        flash("Access denied. Admins only.", "danger")
+        return redirect(url_for('login'))
+    return render_template('admin_dashboard.html')
+
+
+# Doctor Management
+@app.route("/doctor_registration")
+def doctor_registration():
+    if 'jwt_token' not in session or session['user_role'] != 'admin':
+        flash("Access denied. Admins only. Please Logging to the system.", "danger")
+        return redirect(url_for('login'))
+    return render_template('doctor_registration.html')
+
+
+# Appointment Management
+@app.route("/appointment_management_dashboard")
+def appointment_management_dashboard():
+    if 'jwt_token' not in session or session['user_role'] != 'admin':
+        flash("Access denied. Admins only. Please Logging to the system.", "danger")
+        return redirect(url_for('login'))
+    return render_template('appointment_management_dashboard.html')
+
+# Logs
+@app.route("/logs")
+def logs():
+    if 'jwt_token' not in session or session['user_role'] != 'admin':
+        flash("Access denied. Admins only. Please Logging to the system.", "danger")
+        return redirect(url_for('login'))
+    return render_template('logs.html')
+
+
+
+# # Route to display the doctors in table view
+# @app.route('/admin/doctors')
+# def doctor_management():
+#     connection = get_db_connection()
+#     cursor = connection.cursor(dictionary=True)
+#     cursor.execute("SELECT * FROM doctors")
+#     doctors = cursor.fetchall()
+#     cursor.close()
+#     connection.close()
+#     return render_template('doctor_management.html', doctors=doctors)
+
+# Route to display the doctors in table view
+@app.route('/admin/doctors')
+def doctor_management():
+    connection = get_db_connection()
+    cursor = connection.cursor(dictionary=True)
+    
+    # Fetch encrypted data from the database
+    cursor.execute("SELECT * FROM doctors")
+    doctors = cursor.fetchall()
+    
+    # Decrypt sensitive fields
+    for doctor in doctors:
+        doctor['user_email'] = decrypt_data(doctor['user_email'])
+        doctor['medical_no'] = decrypt_data(doctor['medical_no'])
+        doctor['workplace'] = decrypt_data(doctor['workplace'])
+        doctor['specialization'] = decrypt_data(doctor['specialization'])
+    
+    cursor.close()
+    connection.close()
+    
+    # Render the template with decrypted data
+    return render_template('doctor_management.html', doctors=doctors)
+
+
+# Route to delete a doctor based on their email (primary key)
+@app.route('/admin/doctors/delete/<user_email>', methods=['POST'])
+def delete_doctors(user_email):
+    connection = get_db_connection()
+    cursor = connection.cursor()
+    cursor.execute("DELETE FROM doctors WHERE user_email = %s", (user_email,))
+    connection.commit()
+    cursor.close()
+    connection.close()
+    flash('Doctor deleted successfully!')
+    return redirect(url_for('doctor_management'))
+
+# # Route to delete a user based on their user ID
+# # @app.route('/admin/users/delete/<int:user_id>', methods=['POST'])
+# # def delete_user(user_id):
+# #     connection = get_db_connection()
+# #     cursor = connection.cursor()
+# #     cursor.execute("DELETE FROM users WHERE id = %s", (user_id,))
+# #     connection.commit()
+# #     cursor.close()
+# #     connection.close()
+# #     flash('User deleted successfully!')
+# #     return redirect(url_for('user_management'))
+
+
+# Route to display the checkups in table view
+@app.route('/admin/checkups')
+def checkup_management():
+    connection = get_db_connection()
+    cursor = connection.cursor(dictionary=True)
+    
+    # Fetch encrypted data from the database
+    cursor.execute("SELECT * FROM regular_checkups")
+    checkups = cursor.fetchall()
+    
+    # Decrypt sensitive fields
+    for checkup in checkups:
+        checkup['patient_nic '] = decrypt_data(checkup['patient_nic'])
+        checkup['email'] = decrypt_data(checkup['email'])
+        checkup['appointment_date'] = decrypt_data(checkup['appointment_date'])
+        checkup['appointment_time'] = decrypt_data(checkup['appointment_time'])
+        checkup['test_type'] = decrypt_data(checkup['test_type'])
+    
+    cursor.close()
+    connection.close()
+    
+    # Render the template with decrypted data
+    return render_template('checkup_management.html', checkups=checkups)
+
+
+# Route to delete a checkups based on their patient_nic (primary key)
+@app.route('/admin/checkups/delete/<patient_nic>', methods=['POST'])
+def delete_checkups(patient_nic):
+    connection = get_db_connection()
+    cursor = connection.cursor()
+    cursor.execute("DELETE FROM regular_checkups WHERE patient_nic = %s", (patient_nic,))
+    connection.commit()
+    cursor.close()
+    connection.close()
+    flash('checkups data deleted successfully!')
+    return redirect(url_for('checkup_management'))

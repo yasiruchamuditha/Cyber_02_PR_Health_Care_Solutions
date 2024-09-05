@@ -80,7 +80,7 @@ def save_user(UserEmail, User_Role, hashed_password):
 def generate_jwt_token(UserEmail, jwt_secret):
     payload = {
         'user': UserEmail,
-        'exp': datetime.utcnow() + timedelta(hours=1)  # Token expires in 1 hour
+        'exp': datetime.utcnow() + timedelta(minutes=5)  # Token expires in 5 minutes
     }
     token = jwt.encode(payload, jwt_secret, algorithm='HS256')
     return token
@@ -210,10 +210,10 @@ def init_db():
         user_email VARCHAR(255) NOT NULL PRIMARY KEY,
         medical_no VARCHAR(255) NOT NULL,
         specialization VARCHAR(255) NOT NULL,
-        grad_year VARCHAR(4) NOT NULL,
-        experience_years VARCHAR(4) NOT NULL,
+        grad_year VARCHAR(255) NOT NULL,
+        experience_years VARCHAR(255) NOT NULL,
         workplace VARCHAR(255) NOT NULL,
-        work_address TEXT NOT NULL,
+        work_address VARCHAR(255) NOT NULL,
         submitted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )
     ''')

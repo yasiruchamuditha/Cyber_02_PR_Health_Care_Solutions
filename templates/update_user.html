@@ -2,24 +2,42 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Update User</title>
+    <!-- Bootstrap CSS -->
+    <link rel="icon" type="images/x-icon" href="https://cdn4.iconfinder.com/data/icons/social-messaging-ui-color-and-shapes-1/177800/01-1024.png" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
-    <h1>Update User</h1>
-    <form method="POST">
-        <label for="user_role">User Role:</label>
-        <select id="user_role" name="user_role">
-            <option value="user" {% if user.user_role == 'user' %}selected{% endif %}>User</option>
-            <option value="admin" {% if user.user_role == 'admin' %}selected{% endif %}>Admin</option>
-        </select><br>
+    {% include 'nava.html' %}
+    <div class="container" style="margin-bottom: 250px;">
+    <div class="container my-5" style="width: 600px;margin-bottom: 500px;">
+        <h1 class="text-center mb-4">Update User</h1>
+        <form method="POST" class="shadow p-4 bg-light rounded">
+            <div class="mb-3">
+                <label for="user_role" class="form-label">User Role:</label>
+                <select id="user_role" name="user_role" class="form-select">
+                    <option value="user" {% if user.user_role == 'user' %}selected{% endif %}>User</option>
+                    <option value="admin" {% if user.user_role == 'admin' %}selected{% endif %}>Admin</option>
+                </select>
+            </div>
 
-        <label for="is_verified">Verification Status:</label>
-        <select id="is_verified" name="is_verified">
-            <option value="1" {% if user.is_verified == 1 %}selected{% endif %}>Verified</option>
-            <option value="0" {% if user.is_verified == 0 %}selected{% endif %}>Unverified</option>
-        </select><br>
+            <div class="mb-3">
+                <label for="is_verified" class="form-label">Verification Status:</label>
+                <select id="is_verified" name="is_verified" class="form-select">
+                    <option value="1" {% if user.is_verified == 1 %}selected{% endif %}>Verified</option>
+                    <option value="0" {% if user.is_verified == 0 %}selected{% endif %}>Unverified</option>
+                </select>
+            </div>
 
-        <button type="submit">Update</button>
-    </form>
+            <div class="text-center">
+                <button type="submit" class="btn btn-primary">Update</button>
+            </div>
+        </form>
+    </div>
+    </div>
+    {% include 'footer.html' %}
+    <!-- Bootstrap JS (for optional JavaScript components) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

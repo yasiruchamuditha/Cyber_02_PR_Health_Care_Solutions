@@ -3,39 +3,38 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>User Management</title>
+    <title>Doctor Management</title>
     <!-- Bootstrap CSS -->
     <link rel="icon" type="images/x-icon" href="https://cdn4.iconfinder.com/data/icons/social-messaging-ui-color-and-shapes-1/177800/01-1024.png" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
     {% include 'nava.html' %}
-    <div class="container my-5" >
-        <h1 class="text-center mb-4">User Management</h1>
-        <table class="table table-bordered table-hover" style="margin-bottom: 410px;" >
+    
+    <div class="container my-5">
+        <h1 class="text-center mb-4">Doctor Management</h1>
+        <table class="table table-bordered table-hover" style="margin-bottom: 410px;">
             <thead class="table-dark">
                 <tr>
                     <th>User Email</th>
-                    <th>User Role</th>
-                    <th>Verification Status</th>
+                    <th>medical_no</th>
+                    <th>Workplace</th>
+                    <th>specialization</th>
                     <th>Created At</th>
                     <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
-                {% for user in users %}
+                {% for doctor in doctors %}
                 <tr>
-                    <td>{{ user.UserEmail }}</td>
-                    <td>{{ user.user_role }}</td>
+                    <td>{{ doctor.user_email }}</td>
+                    <td>{{ doctor.medical_no }}</td>
+                    <td>{{ doctor.workplace }}</td>
+                    <td>{{ doctor.specialization }}</td>
+                    <td>{{ doctor.submitted_at }}</td>
                     <td>
-                        <span class="badge {{ 'bg-success' if user.is_verified else 'bg-danger' }}">
-                            {{ 'Verified' if user.is_verified else 'Unverified' }}
-                        </span>
-                    </td>
-                    <td>{{ user.created_at }}</td>
-                    <td>
-                        <a href="{{ url_for('update_user', UserEmail=user.UserEmail) }}" class="btn btn-sm btn-primary">Update</a>
-                        <form action="{{ url_for('delete_user', UserEmail=user.UserEmail) }}" method="post" style="display:inline-block;">
+                        <!-- Only delete button -->
+                        <form action="{{ url_for('delete_doctors', user_email =doctor.user_email) }}" method="post" style="display:inline-block;">
                             <button type="submit" class="btn btn-sm btn-danger">Delete</button>
                         </form>
                     </td>
@@ -44,7 +43,9 @@
             </tbody>
         </table>
     </div>
+
     {% include 'footer.html' %}
+    
     <!-- Bootstrap JS (for optional JavaScript components) -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
