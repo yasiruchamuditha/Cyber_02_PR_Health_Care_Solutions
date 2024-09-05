@@ -4,23 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard</title>
+    <link rel="icon" type="images/x-icon" href="https://cdn4.iconfinder.com/data/icons/social-messaging-ui-color-and-shapes-1/177800/01-1024.png" />
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <style>
-        body {
-            padding-top: 56px;
-        }
-        .sidebar {
-            height: 100%;
-            width: 250px;
-            position: fixed;
-            top: 0;
-            left: 0;
-            background-color: #343a40;
-            color: white;
-            padding: 15px;
-        }
         .content {
-            margin-left: 270px;
+            margin-left: 100px;
+            margin-right: 100px;
             padding: 15px;
         }
         .card {
@@ -29,66 +18,89 @@
     </style>
 </head>
 <body>
-    <!-- Sidebar -->
-    <div class="sidebar">
-        <h4>Admin Dashboard</h4>
-        <ul class="nav flex-column">
-            <li class="nav-item">
-                <a class="nav-link text-white" href="#">Dashboard</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link text-white" href="#">Manage Users</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link text-white" href="#">Site Settings</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link text-white" href="#">Logs</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link text-white" href="#">Logout</a>
-            </li>
-        </ul>
-    </div>
-
+    {% include 'nava.html' %}
     <!-- Main Content -->
     <div class="content">
         <div class="container">
             <h1>Welcome, Admin!</h1>
+
             <div class="row">
                 <div class="col-md-6">
                     <div class="card">
                         <div class="card-body">
                             <h5 class="card-title">User Management</h5>
                             <p class="card-text">View and manage user accounts.</p>
-                            <a href="#" class="btn btn-primary">Go to User Management</a>
+                            <a href="{{ url_for('user_management') }}" class="btn btn-primary">Click Here</a>
                         </div>
                     </div>
                 </div>
                 <div class="col-md-6">
                     <div class="card">
                         <div class="card-body">
-                            <h5 class="card-title">Site Settings</h5>
-                            <p class="card-text">Update site configuration and settings.</p>
-                            <a href="#" class="btn btn-primary">Go to Site Settings</a>
+                            <h5 class="card-title">Doctor Registration</h5>
+                            <p class="card-text">Register the doctor accounts.</p>
+                            <a href="{{ url_for('doctor_registration') }}" class="btn btn-primary">Click Here</a>
                         </div>
                     </div>
                 </div>
             </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">Doctor Management</h5>
+                            <p class="card-text">View and manage doctor accounts.</p>
+                            <a href="{{ url_for('doctor_management') }}" class="btn btn-primary">Click Here</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">checkup Management</h5>
+                            <p class="card-text">View and manage doctor Appointment and checkup Bookings.</p>
+                            <a href="{{ url_for('checkup_management') }}" class="btn btn-primary">Click Here</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">Appointment Management</h5>
+                            <p class="card-text">View and manage doctor Appointment and checkup Bookings.</p>
+                            <a href="#" class="btn btn-primary">Click Here</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">Database Logs</h5>
+                            <p class="card-text">View recent Databse audit logs.</p>
+                            <a href="#" class="btn btn-primary">Click Here</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div class="row">
                 <div class="col-md-12">
                     <div class="card">
                         <div class="card-body">
                             <h5 class="card-title">Activity Logs</h5>
                             <p class="card-text">View recent activity logs.</p>
-                            <a href="#" class="btn btn-primary">Go to Logs</a>
+                            <a href="#" class="btn btn-primary">Click Here</a>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-
+    {% include 'footer.html' %}
     <!-- Scripts -->
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>

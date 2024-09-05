@@ -2,7 +2,7 @@
 
 from flask import Flask, request, jsonify, session, redirect, url_for, flash, render_template
 from model import (
-    decrypt_data, get_db_connection, get_user_by_username, save_checkup_details, save_user,
+    decrypt_data, get_db_connection, get_user_by_UserEmail, save_checkup_details, save_user,
     generate_jwt_token, decode_jwt_token, generate_verification_code,
     send_verification_email,save_doctor_details, init_db
 )
@@ -43,7 +43,7 @@ app.config['SECRET_KEY'] = load_secret_key()  # Load secret key from file
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-# Route to upload prescription
+# Routes
 # Route to upload prescription
 @app.route('/upload', methods=['GET', 'POST'])
 def upload_file():
@@ -78,28 +78,7 @@ def upload_file():
     
     return render_template('upload.html')
 
-# @app.route('/upload', methods=['GET', 'POST'])
-# def upload_file():
-#     if request.method == 'POST':
-#         # Check if the post request has the file part
-#         if 'file' not in request.files:
-#             flash('No file part')
-#             return redirect(request.url)
-#         file = request.files['file']
-#         # If the user does not select a file, the browser submits an empty file
-#         if file.filename == '':
-#             flash('No selected file')
-#             return redirect(request.url)
-#         if file and allowed_file(file.filename):
-#             filename = secure_filename(file.filename)
-#             file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-#             flash('File successfully uploaded')
-#             return redirect(url_for('services'))
-#     return render_template('upload.html')
 
-
-
-# Routes
 # Index routes.Render the homepage. Check if user is logged in.
 @app.route("/")
 def index():
@@ -148,7 +127,7 @@ def display_prescriptions():
 @app.route("/register", methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
-        username = request.form['txtUSerEmail']
+        UserEmail = request.form['txtUserEmail']
         User_Role = request.form['User_Role']
         password = request.form['txtPassword']
         confirm_password = request.form['txtConfirm_Password']
@@ -158,9 +137,9 @@ def register():
             flash("Passwords do not match!", "danger")
             return redirect(url_for('register'))
 
-        # Check if username already exists
-        if get_user_by_username(username):
-            flash("Username already taken!", "danger")
+        # Check if USer Email already exists
+        if get_user_by_UserEmail(UserEmail):
+            flash("User Email already taken!", "danger")
             return redirect(url_for('register'))
 
         # Hash the password and store the user in the database
@@ -172,14 +151,14 @@ def register():
 
         conn = get_db_connection()
         cursor = conn.cursor()
-        cursor.execute("INSERT INTO users (username, User_Role, password, verification_code, code_expires_at) VALUES (%s, %s, %s, %s, %s)", 
-                       (username, User_Role, hashed_password, verification_code, code_expires_at))
+        cursor.execute("INSERT INTO users (UserEmail, User_Role, password, verification_code, code_expires_at) VALUES (%s, %s, %s, %s, %s)", 
+                       (UserEmail, User_Role, hashed_password, verification_code, code_expires_at))
         conn.commit()
         cursor.close()
         conn.close()
 
         # Send verification email
-        send_verification_email(username, verification_code)
+        send_verification_email(UserEmail, verification_code)
 
         flash("Registration successful! A verification code has been sent to your email.", "success")
         return render_template('verification.html')
@@ -190,12 +169,12 @@ def register():
 @app.route("/verify", methods=['GET', 'POST'])
 def verify():
     if request.method == 'POST':
-        username = request.form['txtUSerEmail']
+        UserEmail = request.form['txtUserEmail']
         verification_code = request.form['txtVerificationCode']
 
         conn = get_db_connection()
         cursor = conn.cursor()
-        cursor.execute("SELECT verification_code, code_expires_at FROM users WHERE username = %s", (username,))
+        cursor.execute("SELECT verification_code, code_expires_at FROM users WHERE UserEmail = %s", (UserEmail,))
         user = cursor.fetchone()
 
         if user is None:
@@ -214,14 +193,14 @@ def verify():
             flash("Invalid verification code!", "danger")
             return redirect(url_for('verify'))
 
-        cursor.execute("UPDATE users SET is_verified = TRUE WHERE username = %s", (username,))
+        cursor.execute("UPDATE users SET is_verified = TRUE WHERE UserEmail = %s", (UserEmail,))
         conn.commit()
         cursor.close()
         conn.close()
 
         flash("Account verified successfully! Please log in.", "success")
         return redirect(url_for('login'))
-    return render_template('verify.html')
+    return render_template('verification.html')
 
 
 # Handle user login
@@ -240,38 +219,49 @@ def login():
             flash("reCAPTCHA verification failed. Please try again.", "danger")
             return redirect(url_for('login'))
 
-        username = request.form['txtUSerEmail']
+        UserEmail = request.form['txtUserEmail']
         password = request.form['txtPassword']
 
         # Retrieve the user from the database
         conn = get_db_connection()
         cursor = conn.cursor()
-        cursor.execute("SELECT * FROM users WHERE username = %s", (username,))
+        cursor.execute("SELECT * FROM users WHERE UserEmail = %s", (UserEmail,))
         user = cursor.fetchone()
         cursor.close()
         conn.close()
 
         if user is None:
-            flash("Username not found!", "danger")
+            flash("UserEmail not found!", "danger")
             return redirect(url_for('login'))
 
         # Check if user is verified
         is_verified = user[4]  # Assuming 'is_verified' is in the fifth column
         if not is_verified:
             flash("Account not verified! Please check your email.", "danger")
+            # Generate a new verification code
+            verification_code = generate_verification_code()
+            code_expires_at = datetime.utcnow() + timedelta(minutes=10)  # Code expires in 10 minutes
+            conn = get_db_connection()
+            cursor = conn.cursor()
+            cursor.execute("UPDATE users SET verification_code = %s, code_expires_at = %s WHERE UserEmail = %s", (verification_code, code_expires_at, UserEmail))
+            conn.commit()
+            cursor.close()
+            conn.close()
+            # Send verification email
+            send_verification_email(UserEmail, verification_code)
             return redirect(url_for('verify'))
 
         # Verify the password
-        hashed_password = user[2]  # Assuming hashed password is in the third column
+        hashed_password = user[1]  # Assuming hashed password is in the second column
         if not check_password_hash(hashed_password, password):
             flash("Incorrect password!", "danger")
             return redirect(url_for('login'))
         
         # Determine the user's role
-        user_role  = user[3]  # Assuming 'role' is in the sixth column
+        user_role  = user[2]  # Assuming 'role' is in the third column
 
         # If login is successful, generate a JWT token
-        token = generate_jwt_token(username, jwt_secret)
+        token = generate_jwt_token(UserEmail, jwt_secret)
         session['jwt_token'] = token
         session['user_role'] = user_role  
 
@@ -284,22 +274,15 @@ def login():
 
     return render_template('login.html')
 
-# Route to handle admin dashboard
-@app.route("/admin_dashboard")
-def admin_dashboard():
-    if 'jwt_token' not in session or session['user_role'] != 'admin':
-        flash("Access denied. Admins only.", "danger")
-        return redirect(url_for('login'))
-    return render_template('admin_dashboard.html')
 
 # Route to handle user forgot_password
 @app.route("/forgot_password", methods=['GET', 'POST'])
 def forgot_password():
     if request.method == 'POST':
-        username = request.form['txtUSerEmail']
+        UserEmail = request.form['txtUserEmail']
 
         # Check if the user exists
-        user = get_user_by_username(username)
+        user = get_user_by_UserEmail(UserEmail)
         if user is None:
             flash("Email not found!", "danger")
             return redirect(url_for('forgot_password'))
@@ -310,17 +293,17 @@ def forgot_password():
 
         conn = get_db_connection()
         cursor = conn.cursor()
-        cursor.execute("UPDATE users SET verification_code = %s, code_expires_at = %s WHERE username = %s",
-                       (verification_code, code_expires_at, username))
+        cursor.execute("UPDATE users SET verification_code = %s, code_expires_at = %s WHERE UserEmail = %s",
+                       (verification_code, code_expires_at, UserEmail))
         conn.commit()
         cursor.close()
         conn.close()
 
         # Send the verification code via email
-        send_verification_email(username, verification_code)
+        send_verification_email(UserEmail, verification_code)
 
         flash("A verification code has been sent to your email.", "success")
-        return redirect(url_for('verify_code', email=username))
+        return redirect(url_for('verify_code', email=UserEmail))
 
     return render_template('forgot_password.html')
 
@@ -328,18 +311,18 @@ def forgot_password():
 @app.route("/verify_code", methods=['GET', 'POST'])
 def verify_code():
     if request.method == 'POST':
-        username = request.form['txtUSerEmail']
+        UserEmail = request.form['txtUserEmail']
         verification_code = request.form['txtVerificationCode']
 
         # Fetch the user and check the verification code
         conn = get_db_connection()
         cursor = conn.cursor()
-        cursor.execute("SELECT verification_code, code_expires_at FROM users WHERE username = %s", (username,))
+        cursor.execute("SELECT verification_code, code_expires_at FROM users WHERE UserEmail = %s", (UserEmail,))
         user = cursor.fetchone()
 
         if user is None:
             flash("Invalid email!", "danger")
-            return redirect(url_for('verify_code', email=username))
+            return redirect(url_for('verify_code', email=UserEmail))
 
         stored_code, code_expires_at = user
 
@@ -351,10 +334,10 @@ def verify_code():
 
         if stored_code != verification_code:
             flash("Invalid verification code!", "danger")
-            return redirect(url_for('verify_code', email=username))
+            return redirect(url_for('verify_code', email=UserEmail))
 
         # If the code is correct, store the username in the session and redirect to the reset password page
-        session['verified_user'] = username
+        session['verified_user'] = UserEmail
         flash("Verification successful! You can now reset your password.", "success")
         cursor.close()
         conn.close()
@@ -381,12 +364,12 @@ def reset_password():
             flash("Passwords do not match!", "danger")
             return redirect(url_for('reset_password'))
 
-        username = session['verified_user']
+        UserEmail = session['verified_user']
         hashed_password = generate_password_hash(new_password)
 
         conn = get_db_connection()
         cursor = conn.cursor()
-        cursor.execute("UPDATE users SET password = %s WHERE username = %s", (hashed_password, username))
+        cursor.execute("UPDATE users SET password = %s WHERE UserEmail = %s", (hashed_password, UserEmail))
         conn.commit()
         cursor.close()
         conn.close()
@@ -397,7 +380,7 @@ def reset_password():
 
     return render_template('reset_password.html')
 
-# Handle user logout
+# Handle user logout user page
 @app.route('/logout')
 def logout():
     session.pop('jwt_token', None)
@@ -423,7 +406,7 @@ def regular_checkup():
         save_checkup_details(patient_nic, email, appointment_date, appointment_time, test_type)
 
         flash("Your checkup details have been submitted successfully!", "success")
-        return redirect(url_for('regular_checkup'))
+        return render_template('services.html')
 
     return render_template('regular_checkup.html')
 
@@ -496,8 +479,226 @@ def register_doctor():
         save_doctor_details(user_email, medical_no, specialization, grad_year, experience_years, workplace, work_address)
 
         flash("Your checkup details have been submitted successfully!", "success")
-        return redirect(url_for('register_doctor'))
+        return redirect(url_for('admin_dashboard'))
 
     return render_template('register_doctor.html')
 
+# Route to display the users in table view
+@app.route('/admin/users')
+def user_management():
+    connection = get_db_connection()
+    cursor = connection.cursor(dictionary=True)
+    cursor.execute("SELECT * FROM users")
+    users = cursor.fetchall()
+    cursor.close()
+    connection.close()
+    return render_template('user_management.html', users=users)
 
+# Route to delete a user based on their email (primary key)
+@app.route('/admin/users/delete/<UserEmail>', methods=['POST'])
+def delete_user(UserEmail):
+    connection = get_db_connection()
+    cursor = connection.cursor()
+    cursor.execute("DELETE FROM users WHERE UserEmail = %s", (UserEmail,))
+    connection.commit()
+    cursor.close()
+    connection.close()
+    flash('User deleted successfully!')
+    return redirect(url_for('user_management'))
+
+# Route to delete a user based on their user ID
+# @app.route('/admin/users/delete/<int:user_id>', methods=['POST'])
+# def delete_user(user_id):
+#     connection = get_db_connection()
+#     cursor = connection.cursor()
+#     cursor.execute("DELETE FROM users WHERE id = %s", (user_id,))
+#     connection.commit()
+#     cursor.close()
+#     connection.close()
+#     flash('User deleted successfully!')
+#     return redirect(url_for('user_management'))
+
+
+# Route to update a user
+@app.route('/admin/users/update/<UserEmail>', methods=['GET', 'POST'])
+def update_user(UserEmail):
+    connection = get_db_connection()
+    cursor = connection.cursor(dictionary=True)
+
+    if request.method == 'POST':
+        user_role = request.form['user_role']
+        is_verified = request.form['is_verified']
+
+        cursor.execute("""
+            UPDATE users 
+            SET user_role = %s, is_verified = %s 
+            WHERE UserEmail = %s
+        """, (user_role, is_verified, UserEmail))
+        connection.commit()
+        flash('User updated successfully!')
+        return redirect(url_for('user_management'))
+
+    cursor.execute("SELECT * FROM users WHERE UserEmail = %s", (UserEmail,))
+    user = cursor.fetchone()
+    cursor.close()
+    connection.close()
+    return render_template('update_user.html', user=user)
+
+# Route to update a user based on their user ID
+# @app.route('/admin/users/update/<int:user_id>', methods=['GET', 'POST'])
+# def update_user(user_id):
+#     connection = get_db_connection()
+#     cursor = connection.cursor(dictionary=True)
+
+#     if request.method == 'POST':
+#         user_role = request.form['user_role']
+#         is_verified = request.form['is_verified']
+
+#         cursor.execute("""
+#             UPDATE users 
+#             SET user_role = %s, is_verified = %s 
+#             WHERE id = %s
+#         """, (user_role, is_verified, user_id))
+#         connection.commit()
+#         flash('User updated successfully!')
+#         return redirect(url_for('user_management'))
+
+#     cursor.execute("SELECT * FROM users WHERE id = %s", (user_id,))
+#     user = cursor.fetchone()
+#     cursor.close()
+#     connection.close()
+#     return render_template('update_user.html', user=user)
+
+
+# Route to handle admin dashboard route in login method
+@app.route("/admin_dashboard")
+def admin_dashboard():
+    if 'jwt_token' not in session or session['user_role'] != 'admin':
+        flash("Access denied. Admins only.", "danger")
+        return redirect(url_for('login'))
+    return render_template('admin_dashboard.html')
+
+
+# Doctor Management
+@app.route("/doctor_registration")
+def doctor_registration():
+    if 'jwt_token' not in session or session['user_role'] != 'admin':
+        flash("Access denied. Admins only. Please Logging to the system.", "danger")
+        return redirect(url_for('login'))
+    return render_template('doctor_registration.html')
+
+
+# Appointment Management
+@app.route("/appointment_management_dashboard")
+def appointment_management_dashboard():
+    if 'jwt_token' not in session or session['user_role'] != 'admin':
+        flash("Access denied. Admins only. Please Logging to the system.", "danger")
+        return redirect(url_for('login'))
+    return render_template('appointment_management_dashboard.html')
+
+# Logs
+@app.route("/logs")
+def logs():
+    if 'jwt_token' not in session or session['user_role'] != 'admin':
+        flash("Access denied. Admins only. Please Logging to the system.", "danger")
+        return redirect(url_for('login'))
+    return render_template('logs.html')
+
+
+
+# # Route to display the doctors in table view
+# @app.route('/admin/doctors')
+# def doctor_management():
+#     connection = get_db_connection()
+#     cursor = connection.cursor(dictionary=True)
+#     cursor.execute("SELECT * FROM doctors")
+#     doctors = cursor.fetchall()
+#     cursor.close()
+#     connection.close()
+#     return render_template('doctor_management.html', doctors=doctors)
+
+# Route to display the doctors in table view
+@app.route('/admin/doctors')
+def doctor_management():
+    connection = get_db_connection()
+    cursor = connection.cursor(dictionary=True)
+    
+    # Fetch encrypted data from the database
+    cursor.execute("SELECT * FROM doctors")
+    doctors = cursor.fetchall()
+    
+    # Decrypt sensitive fields
+    for doctor in doctors:
+        doctor['user_email'] = decrypt_data(doctor['user_email'])
+        doctor['medical_no'] = decrypt_data(doctor['medical_no'])
+        doctor['workplace'] = decrypt_data(doctor['workplace'])
+        doctor['specialization'] = decrypt_data(doctor['specialization'])
+    
+    cursor.close()
+    connection.close()
+    
+    # Render the template with decrypted data
+    return render_template('doctor_management.html', doctors=doctors)
+
+
+# Route to delete a doctor based on their email (primary key)
+@app.route('/admin/doctors/delete/<user_email>', methods=['POST'])
+def delete_doctors(user_email):
+    connection = get_db_connection()
+    cursor = connection.cursor()
+    cursor.execute("DELETE FROM doctors WHERE user_email = %s", (user_email,))
+    connection.commit()
+    cursor.close()
+    connection.close()
+    flash('Doctor deleted successfully!')
+    return redirect(url_for('doctor_management'))
+
+# # Route to delete a user based on their user ID
+# # @app.route('/admin/users/delete/<int:user_id>', methods=['POST'])
+# # def delete_user(user_id):
+# #     connection = get_db_connection()
+# #     cursor = connection.cursor()
+# #     cursor.execute("DELETE FROM users WHERE id = %s", (user_id,))
+# #     connection.commit()
+# #     cursor.close()
+# #     connection.close()
+# #     flash('User deleted successfully!')
+# #     return redirect(url_for('user_management'))
+
+
+# Route to display the checkups in table view
+@app.route('/admin/checkups')
+def checkup_management():
+    connection = get_db_connection()
+    cursor = connection.cursor(dictionary=True)
+    
+    # Fetch encrypted data from the database
+    cursor.execute("SELECT * FROM regular_checkups")
+    checkups = cursor.fetchall()
+    
+    # Decrypt sensitive fields
+    for checkup in checkups:
+        checkup['patient_nic '] = decrypt_data(checkup['patient_nic'])
+        checkup['email'] = decrypt_data(checkup['email'])
+        checkup['appointment_date'] = decrypt_data(checkup['appointment_date'])
+        checkup['appointment_time'] = decrypt_data(checkup['appointment_time'])
+        checkup['test_type'] = decrypt_data(checkup['test_type'])
+    
+    cursor.close()
+    connection.close()
+    
+    # Render the template with decrypted data
+    return render_template('checkup_management.html', checkups=checkups)
+
+
+# Route to delete a checkups based on their patient_nic (primary key)
+@app.route('/admin/checkups/delete/<patient_nic>', methods=['POST'])
+def delete_checkups(patient_nic):
+    connection = get_db_connection()
+    cursor = connection.cursor()
+    cursor.execute("DELETE FROM regular_checkups WHERE patient_nic = %s", (patient_nic,))
+    connection.commit()
+    cursor.close()
+    connection.close()
+    flash('checkups data deleted successfully!')
+    return redirect(url_for('checkup_management'))

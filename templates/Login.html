@@ -35,7 +35,7 @@
         <form class="row g-3 needs-validation" name="frmUserRegistration" method="post" autocomplete="off" action="/login"  onsubmit="return result()" >
             <div class="inputfeild mt-5 ">
                 <label class="form-label mb-2">UserEmail:</label>
-                <input type="email" class="form-control" name="txtUSerEmail" id="txtUSerEmail" placeholder="Enter Your UserEmail" onkeyup="validateUserEmail()" >
+                <input type="email" class="form-control" name="txtUserEmail" id="txtUserEmail" placeholder="Enter Your UserEmail" onkeyup="validateUserEmail()" >
                 <span id="UserEmail_Error"></span>
             </div>
       
@@ -86,7 +86,7 @@
     //validate user Email
     function validateUserEmail()
     {
-      var Email = document.getElementById('txtUSerEmail').value.replace(/^\s+|\s+$/g, "");
+      var Email = document.getElementById('txtUserEmail').value.replace(/^\s+|\s+$/g, "");
       if (Email.length == 0) 
       {
         UserEmail_Error.innerHTML='User Email is required.';
