@@ -2,9 +2,9 @@
 
 from flask import Flask, request, jsonify, session, redirect, url_for, flash, render_template
 from model import (
-    decrypt_data, get_db_connection, get_user_by_UserEmail, save_checkup_details, save_user,
-    generate_jwt_token, decode_jwt_token, generate_verification_code,
-    send_verification_email,save_doctor_details, init_db
+    decrypt_data, encrypt_data, get_db_connection, get_user_by_UserEmail, save_checkup_details, save_user,
+    generate_jwt_token, decode_jwt_token, generate_verification_code, send_successful_password_reset_email,
+    send_verification_email,save_doctor_details
 )
 
 from datetime import datetime, timedelta
@@ -13,6 +13,7 @@ import secrets
 from werkzeug.utils import secure_filename
 from werkzeug.security import generate_password_hash, check_password_hash
 import os
+import jwt
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -147,7 +148,7 @@ def register():
         
         # Generate verification code
         verification_code = generate_verification_code()
-        code_expires_at = datetime.utcnow() + timedelta(minutes=10)  # Code expires in 10 minutes
+        code_expires_at = datetime.utcnow() + timedelta(minutes=5)  # Code expires in 5 minutes
 
         conn = get_db_connection()
         cursor = conn.cursor()
@@ -264,6 +265,10 @@ def login():
         token = generate_jwt_token(UserEmail, jwt_secret)
         session['jwt_token'] = token
         session['user_role'] = user_role  
+        session['user_email'] = UserEmail
+        
+        # Record the login session
+        record_user_login(UserEmail)
 
         flash("Login successful!", "success")
         #return redirect(url_for('index'))
@@ -376,16 +381,34 @@ def reset_password():
 
         session.pop('verified_user', None)  # Clear the session
         flash("Password reset successfully! Please log in.", "success")
+        # Send success email
+        send_successful_password_reset_email(UserEmail)
         return redirect(url_for('login'))
 
     return render_template('reset_password.html')
 
-# Handle user logout user page
+# # Handle user logout user page
+# @app.route('/logout')
+# def logout():
+#     session.pop('jwt_token', None)
+#     flash("You have been logged out.", "success")
+#     return redirect(url_for('index'))
+
+# Handle user logout
 @app.route('/logout')
 def logout():
+    user_email = session.get('user_email')
+
+    if user_email:
+        # Record the logout session
+        record_user_logout(user_email)
+    
+    # Clear the session
     session.pop('jwt_token', None)
+    session.pop('user_email', None)  # Also remove the user email from the session
     flash("You have been logged out.", "success")
     return redirect(url_for('index'))
+
 
 # Handle regular checkup form and insert regular checkup data with encryption.
 @app.route("/regular_checkup", methods=['GET', 'POST'])
@@ -410,7 +433,7 @@ def regular_checkup():
 
     return render_template('regular_checkup.html')
 
-
+# Handle regular checkup card view and select regular checkup data with decryption.
 @app.route('/checkup/<int:checkup_id>', methods=['GET'])
 def get_checkup_details(checkup_id):
     conn = get_db_connection()
@@ -436,9 +459,13 @@ def get_checkup_details(checkup_id):
 
     return jsonify(decrypted_data), 200
 
-# Handle regular checkup card view and select regular checkup data with decryption.
+# # Handle regular checkup card view and select regular checkup data with decryption.
 @app.route('/checkups')
 def display_checkups():
+    # Get the logged-in user's email from the session
+    user_email = session.get('user_email')
+    print("User email from session: ", user_email)
+
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)  # Fetch data as dictionaries
     cursor.execute("SELECT * FROM regular_checkups")
@@ -446,16 +473,21 @@ def display_checkups():
     cursor.close()
     conn.close()
 
-    # Decrypt the data before passing it to the template
+    # Decrypt data and filter based on user's email
+    filtered_checkups = []
     for checkup in checkups:
+        # Decrypt data
         checkup['patient_nic'] = decrypt_data(checkup['patient_nic'])
         checkup['email'] = decrypt_data(checkup['email'])
         checkup['appointment_date'] = decrypt_data(checkup['appointment_date'])
         checkup['appointment_time'] = decrypt_data(checkup['appointment_time'])
         checkup['test_type'] = decrypt_data(checkup['test_type'])
+        
+        # Filter based on user's email
+        if checkup['email'] == user_email:
+            filtered_checkups.append(checkup)
 
-    return render_template('checkups.html', checkups=checkups)
-
+    return render_template('checkups.html', checkups=filtered_checkups)
 
 
 # Handle doctor registration form and insert doctor registration data with encryption.
@@ -506,19 +538,6 @@ def delete_user(UserEmail):
     flash('User deleted successfully!')
     return redirect(url_for('user_management'))
 
-# Route to delete a user based on their user ID
-# @app.route('/admin/users/delete/<int:user_id>', methods=['POST'])
-# def delete_user(user_id):
-#     connection = get_db_connection()
-#     cursor = connection.cursor()
-#     cursor.execute("DELETE FROM users WHERE id = %s", (user_id,))
-#     connection.commit()
-#     cursor.close()
-#     connection.close()
-#     flash('User deleted successfully!')
-#     return redirect(url_for('user_management'))
-
-
 # Route to update a user
 @app.route('/admin/users/update/<UserEmail>', methods=['GET', 'POST'])
 def update_user(UserEmail):
@@ -543,32 +562,6 @@ def update_user(UserEmail):
     cursor.close()
     connection.close()
     return render_template('update_user.html', user=user)
-
-# Route to update a user based on their user ID
-# @app.route('/admin/users/update/<int:user_id>', methods=['GET', 'POST'])
-# def update_user(user_id):
-#     connection = get_db_connection()
-#     cursor = connection.cursor(dictionary=True)
-
-#     if request.method == 'POST':
-#         user_role = request.form['user_role']
-#         is_verified = request.form['is_verified']
-
-#         cursor.execute("""
-#             UPDATE users 
-#             SET user_role = %s, is_verified = %s 
-#             WHERE id = %s
-#         """, (user_role, is_verified, user_id))
-#         connection.commit()
-#         flash('User updated successfully!')
-#         return redirect(url_for('user_management'))
-
-#     cursor.execute("SELECT * FROM users WHERE id = %s", (user_id,))
-#     user = cursor.fetchone()
-#     cursor.close()
-#     connection.close()
-#     return render_template('update_user.html', user=user)
-
 
 # Route to handle admin dashboard route in login method
 @app.route("/admin_dashboard")
@@ -604,18 +597,6 @@ def logs():
         return redirect(url_for('login'))
     return render_template('logs.html')
 
-
-
-# # Route to display the doctors in table view
-# @app.route('/admin/doctors')
-# def doctor_management():
-#     connection = get_db_connection()
-#     cursor = connection.cursor(dictionary=True)
-#     cursor.execute("SELECT * FROM doctors")
-#     doctors = cursor.fetchall()
-#     cursor.close()
-#     connection.close()
-#     return render_template('doctor_management.html', doctors=doctors)
 
 # Route to display the doctors in table view
 @app.route('/admin/doctors')
@@ -653,18 +634,6 @@ def delete_doctors(user_email):
     flash('Doctor deleted successfully!')
     return redirect(url_for('doctor_management'))
 
-# # Route to delete a user based on their user ID
-# # @app.route('/admin/users/delete/<int:user_id>', methods=['POST'])
-# # def delete_user(user_id):
-# #     connection = get_db_connection()
-# #     cursor = connection.cursor()
-# #     cursor.execute("DELETE FROM users WHERE id = %s", (user_id,))
-# #     connection.commit()
-# #     cursor.close()
-# #     connection.close()
-# #     flash('User deleted successfully!')
-# #     return redirect(url_for('user_management'))
-
 
 # Route to display the checkups in table view
 @app.route('/admin/checkups')
@@ -678,7 +647,7 @@ def checkup_management():
     
     # Decrypt sensitive fields
     for checkup in checkups:
-        checkup['patient_nic '] = decrypt_data(checkup['patient_nic'])
+        checkup['patient_nic'] = decrypt_data(checkup['patient_nic'])  # Corrected here
         checkup['email'] = decrypt_data(checkup['email'])
         checkup['appointment_date'] = decrypt_data(checkup['appointment_date'])
         checkup['appointment_time'] = decrypt_data(checkup['appointment_time'])
@@ -702,3 +671,114 @@ def delete_checkups(patient_nic):
     connection.close()
     flash('checkups data deleted successfully!')
     return redirect(url_for('checkup_management'))
+
+
+
+# Route to display the bookings in table view
+@app.route('/book_doctor', methods=['GET', 'POST'])
+def book_doctor():
+    if request.method == 'POST':
+        # Handle form submission
+        user_email = session.get('user_email')
+        patient_nic = request.form['patient_nic']
+        preferred_date = request.form['preferred_date']
+        preferred_time = request.form['preferred_time']
+        doctor_email = request.form['doctor_email']
+        specialization = request.form['specialization']
+        
+        # Encrypt sensitive data
+        encrypted_doctor_email = encrypt_data(doctor_email)
+        encrypted_specialization = encrypt_data(specialization)
+        
+        # Insert booking into the database
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute('''
+        INSERT INTO appointment_bookings (user_email, patient_nic, preferred_date, preferred_time, doctor_email, specialization)
+        VALUES (%s, %s, %s, %s, %s, %s)
+        ''', (user_email, patient_nic, preferred_date, preferred_time, encrypted_doctor_email, encrypted_specialization))
+        conn.commit()
+        cursor.close()
+        conn.close()
+        
+        flash("Booking successfully created!", "success")
+        return redirect(url_for('index'))
+    
+    # Fetch and decrypt doctor data for the form
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute('SELECT * FROM doctors')
+    doctors = cursor.fetchall()
+    cursor.close()
+    conn.close()
+    
+    # Decrypt doctor data
+    for doctor in doctors:
+        doctor['user_email'] = decrypt_data(doctor['user_email'])
+        doctor['specialization'] = decrypt_data(doctor['specialization'])
+    
+    return render_template('book_doctor.html', doctors=doctors)
+
+
+# Route to display the bookings in table view
+def record_user_login(user_email):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute('''
+    INSERT INTO user_sessions (user_id, login_time)
+    VALUES (%s, %s)
+    ''', (user_email, datetime.utcnow()))
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+# Route to display the bookings in table view
+def record_user_logout(user_email):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute('''
+    UPDATE user_sessions
+    SET logout_time = %s
+    WHERE user_id = %s AND logout_time IS NULL
+    ''', (datetime.utcnow(), user_email))
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+
+# Route to display the appointments in table view
+@app.route('/admin/appointments')
+def appointment_management():
+    connection = get_db_connection()
+    cursor = connection.cursor(dictionary=True)
+    
+    # Fetch encrypted data from the database
+    cursor.execute("SELECT * FROM appointment_bookings")
+    appointments = cursor.fetchall()
+    
+    # Decrypt sensitive fields
+    for appointment in appointments:
+        appointment['patient_nic'] = decrypt_data(appointment['patient_nic'])  # Corrected here
+        appointment['user_email'] = decrypt_data(appointment['user_email'])
+        appointment['preferred_date'] = decrypt_data(appointment['preferred_date'])
+        appointment['preferred_time'] = decrypt_data(appointment['preferred_time'])
+        appointment['doctor_email'] = decrypt_data(appointment['doctor_email'])
+        appointment['specialization'] = decrypt_data(appointment['specialization'])
+    
+    cursor.close()
+    connection.close()
+    
+    # Render the template with decrypted data
+    return render_template('appointment_management.html', appointments=appointments)
+
+# Route to delete an appointment based on its booking_id (primary key)
+@app.route('/admin/appointments/delete/<int:booking_id>', methods=['POST'])
+def delete_appointment(booking_id):
+    connection = get_db_connection()
+    cursor = connection.cursor()
+    cursor.execute("DELETE FROM appointment_bookings WHERE booking_id = %s", (booking_id,))
+    connection.commit()
+    cursor.close()
+    connection.close()
+    flash('Appointment booking deleted successfully!')
+    return redirect(url_for('appointment_management'))

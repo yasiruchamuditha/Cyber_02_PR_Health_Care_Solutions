@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <title>PR CARE SOLUTIONS - Book Doctor</title>
+    <link rel="icon" type="images/x-icon" href="https://cdn4.iconfinder.com/data/icons/social-messaging-ui-color-and-shapes-1/177800/01-1024.png" />
+       <!--
+   * @author Yasiru
+   * contact me : https://linktr.ee/yasiruchamuditha for more information.
+   -->
+</head>
+<body>
+    {% include 'nav.html' %}
+    <div class="container mt-5">
+        <h2>Book a Doctor</h2>
+        <form method="post">
+            <div class="mb-3">
+                <label for="patient_nic" class="form-label">Patient NIC</label>
+                <input type="text" class="form-control" id="patient_nic" name="patient_nic" required>
+            </div>
+            <div class="mb-3">
+                <label for="preferred_date" class="form-label">Preferred Date</label>
+                <input type="date" class="form-control" id="preferred_date" name="preferred_date" required>
+            </div>
+            <div class="mb-3">
+                <label for="preferred_time" class="form-label">Preferred Time</label>
+                <input type="time" class="form-control" id="preferred_time" name="preferred_time" required>
+            </div>
+            <div class="mb-3">
+                <label for="doctor_email" class="form-label">Select Doctor</label>
+                <select class="form-select" id="doctor_email" name="doctor_email" required>
+                    {% for doctor in doctors %}
+                    <option value="{{ doctor.user_email }}">{{ doctor.user_email }} - {{ doctor.specialization }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="mb-3">
+                <label for="specialization" class="form-label">Specialization</label>
+                <input type="text" class="form-control" id="specialization" name="specialization" readonly>
+            </div>
+            <button type="submit" class="btn btn-primary">Book Now</button>
+        </form>
+    </div>
+    {% include 'footer.html' %}
+    <script>
+        // JavaScript to auto-fill specialization based on selected doctor
+        document.getElementById('doctor_email').addEventListener('change', function() {
+            var selectedOption = this.options[this.selectedIndex];
+            document.getElementById('specialization').value = selectedOption.text.split(' - ')[1];
+        });
+    </script>
+</body>
+</html>

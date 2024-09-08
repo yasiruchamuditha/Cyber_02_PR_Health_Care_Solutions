@@ -80,20 +80,35 @@ def save_user(UserEmail, User_Role, hashed_password):
 def generate_jwt_token(UserEmail, jwt_secret):
     payload = {
         'user': UserEmail,
-        'exp': datetime.utcnow() + timedelta(minutes=5)  # Token expires in 5 minutes
+        'exp': datetime.utcnow() + timedelta(minutes=30)  # Token expires in 30 minutes
     }
     token = jwt.encode(payload, jwt_secret, algorithm='HS256')
     return token
 
-# Function to decode a JWT token
+# # Function to decode a JWT token
+# def decode_jwt_token(token, jwt_secret):
+#     try:
+#         decoded = jwt.decode(token, jwt_secret, algorithms=['HS256'])
+#         return decoded['user']
+#     except jwt.ExpiredSignatureError:
+#         print("Token has expired")
+#         return None  # Token has expired
+#     except jwt.InvalidTokenError:
+#         print("Invalid token")
+#         return None  # Invalid token
+
 def decode_jwt_token(token, jwt_secret):
     try:
         decoded = jwt.decode(token, jwt_secret, algorithms=['HS256'])
         return decoded['user']
+        
     except jwt.ExpiredSignatureError:
+        print("Token has expired")
         return None  # Token has expired
     except jwt.InvalidTokenError:
+        print("Invalid token")
         return None  # Invalid token
+
 
 # Function to generate a random verification code
 def generate_verification_code():
@@ -172,7 +187,76 @@ def save_doctor_details(user_email, medical_no, specialization, grad_year, exper
     cursor.close()
     conn.close()
 
-    
+
+def send_successful_password_reset_email(user_email):
+    smtp_server = 'smtp.example.com'  # Replace with your SMTP server
+    smtp_port = 587  # Typically 587 for TLS
+    smtp_user = 'prcaretest@gmail.com'  # Replace with your SMTP email
+    smtp_password = 'rmtoagnrrqvjnzne'  # Replace with your SMTP password
+
+    subject = 'Password Reset Successful'
+    body = '''
+    Dear User,
+
+    Your password has been successfully reset. If you did not request this change, please contact our support team immediately.
+
+    Best regards,
+    Your Company Name
+    '''
+
+    msg = MIMEMultipart()
+    msg['From'] = smtp_user
+    msg['To'] = user_email
+    msg['Subject'] = subject
+
+    msg.attach(MIMEText(body, 'plain'))
+
+    try:
+        with smtplib.SMTP(smtp_server, smtp_port) as server:
+            server.starttls()  # Upgrade the connection to a secure encrypted SSL/TLS connection
+            server.login(smtp_user, smtp_password)
+            server.sendmail(msg['From'], msg['To'], msg.as_string())
+        print("Email sent successfully.")
+    except Exception as e:
+        print(f"Error sending email: {e}")
+
+
+def send_welcome_email(user_email):
+    smtp_server = 'smtp.example.com'  # Replace with your SMTP server
+    smtp_port = 587  # Typically 587 for TLS
+    smtp_user = 'your_email@example.com'  # Replace with your SMTP email
+    smtp_password = 'your_password'  # Replace with your SMTP password
+
+    subject = 'Welcome to Our Service!'
+    body = f'''
+    Dear User,
+
+    Welcome to our service! We're excited to have you on board.
+
+    Your registration was successful. You can now log in to your account and start using our features.
+
+    If you have any questions or need assistance, feel free to contact our support team.
+
+    Best regards,
+    Your Company Name
+    '''
+
+    msg = MIMEMultipart()
+    msg['From'] = smtp_user
+    msg['To'] = user_email
+    msg['Subject'] = subject
+
+    msg.attach(MIMEText(body, 'plain'))
+
+    try:
+        with smtplib.SMTP(smtp_server, smtp_port) as server:
+            server.starttls()  # Upgrade the connection to a secure encrypted SSL/TLS connection
+            server.login(smtp_user, smtp_password)
+            server.sendmail(msg['From'], msg['To'], msg.as_string())
+        print("Welcome email sent successfully.")
+    except Exception as e:
+        print(f"Error sending welcome email: {e}")
+
 
 # Function to initialize the database
 def init_db():
@@ -257,6 +341,20 @@ def init_db():
     new_values TEXT,
     FOREIGN KEY (changed_by) REFERENCES users(UserEmail),
     submitted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP           
+    )
+    ''')
+
+# Create the bookings table
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS appointment_bookings (
+    booking_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_email VARCHAR(255) NOT NULL,
+    patient_nic VARCHAR(255) NOT NULL,
+    preferred_date DATE NOT NULL,
+    preferred_time TIME NOT NULL,
+    doctor_email VARCHAR(255) NOT NULL,
+    specialization VARCHAR(255) NOT NULL,
+    submitted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )
     ''')
 

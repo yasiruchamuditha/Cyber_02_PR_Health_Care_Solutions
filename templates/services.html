@@ -19,77 +19,83 @@
 <body style="background: url(static/images/4register.png); background-size: cover;">
     {% include 'nav.html' %}
     <h1 style=" margin-top: 50px;">PR CARE SERVICES</h1>
-    <div class="container-fluid" style="width: 1200px;height: 800px; margin-top: 50px;">
-    <div class="row">
-        <div class="col-md-4">
-            <div class="card" style="width: 350px;">
-                <img src="static/images/4register.png" class="card-img-top" alt="...">
-                <div class="card-body">
-                  <h5 class="card-title">Reserve Checkup</h5>
-                  <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
-                  <a href="{{ url_for('s_regularCheckup') }}" class="btn btn-primary">Go somewhere</a>
-                </div>
+    <!-- Service Section -->
+<div class="container-fluid" style="width: 1400px; height: 800px; margin: 50px 100px 0 100px;">
+  <div class="row">
+      <div class="col-md-4">
+          <div class="card" style="width: 350px;">
+              <img src="static/images/d1.jpg" class="card-img-top" alt="E-Doctor Appointment" style="height: 200px; object-fit: cover;">
+              <div class="card-body">
+                <h5 class="card-title">E-Doctor Appointment</h5>
+                <p class="card-text">Book your doctor's appointment online, ensuring quick access to specialized healthcare services.</p>
+                <a href="{{ url_for('book_doctor') }}"  class="btn btn-primary">Book Now</a>
               </div>
-        </div>
+            </div>
+      </div>
 
-        <div class="col-md-4">
-            <div class="card" style="width: 350px;">
-                <img src="static/images/4register.png" class="card-img-top" alt="...">
-                <div class="card-body">
-                  <h5 class="card-title">View Checkup</h5>
-                  <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
-                  <a href="{{ url_for('display_checkups') }}" class="btn btn-primary">Go somewhere</a>
-                </div>
+      <div class="col-md-4">
+          <div class="card" style="width: 350px;">
+              <img src="static/images/p1.jpg" class="card-img-top" alt="E-Prescription" style="height: 200px; object-fit: cover;">
+              <div class="card-body">
+                <h5 class="card-title">E-Prescription</h5>
+                <p class="card-text">Get prescription's Medicine via our system.This streamlining the process of managing and filling your medications.</p>
+                <a href="{{ url_for('upload_file') }}" class="btn btn-primary">Book Now</a>
               </div>
-        </div>
+            </div>
+      </div>
 
-        <div class="col-md-4">
-            <div class="card" style="width: 350px;">
-                <img src="static/images/4register.png" class="card-img-top" alt="...">
-                <div class="card-body">
-                  <h5 class="card-title">Save Prescriptions</h5>
-                  <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
-                  <a href="{{ url_for('upload_file') }}" class="btn btn-primary">Go somewhere</a>
-                </div>
+      <div class="col-md-4">
+          <div class="card" style="width: 350px;">
+              <img src="static/images/r1.jpg" class="card-img-top" alt="E-Checkup Booking" style="height: 200px; object-fit: cover;">
+              <div class="card-body">
+                <h5 class="card-title">E-Checkups</h5>
+                <p class="card-text">Easily book your regular health checkups online, choosing the best time and tests for your needs.</p>
+                <a href="{{ url_for('s_regularCheckup') }}" class="btn btn-primary">Book Now</a>
               </div>
+            </div>
+      </div>
+  </div>
+
+  <div class="row">
+
+    <div class="col-md-4">
+      <div class="card" style="width: 350px; margin-top: 50px;">
+          <img src="static/images/p2.jpg" class="card-img-top" alt="E-Public Health" style="height: 200px; object-fit: cover;">
+          <div class="card-body">
+            <h5 class="card-title">MY E-Appoinment</h5>
+            <p class="card-text">Stay updated on public health services and information, promoting community health awareness.</p>
+            <a href="#" class="btn btn-primary">Check Now</a>
+          </div>
         </div>
     </div>
 
-    <div class="row">
-        <div class="col-md-4">
-            <div class="card" style="width: 350px;margin-top: 40px;">
-                <img src="static/images/4register.png" class="card-img-top" alt="...">
-                <div class="card-body">
-                  <h5 class="card-title">View Prescriptions</h5>
-                  <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
-                  <a href="{{ url_for('display_prescriptions') }}" class="btn btn-primary">Go somewhere</a>
-                </div>
+      <div class="col-md-4">
+          <div class="card" style="width: 350px; margin-top: 50px;">
+              <img src="static/images/t1.jpg" class="card-img-top" alt="E-Test Report" style="height: 200px; object-fit: cover;">
+              <div class="card-body">
+                <h5 class="card-title">MY E-Checkups</h5>
+                <p class="card-text">Access your medical test results securely online, saving time and avoiding the need for physical reports.</p>
+                <a href="{{ url_for('display_checkups') }}" class="btn btn-primary">Check Now</a>
               </div>
-        </div>
+            </div>
+      </div>
 
-        <div class="col-md-4">
-            <div class="card" style="width: 350px;margin-top: 40px;">
-                <img src="static/images/4register.png" class="card-img-top" alt="...">
-                <div class="card-body">
-                  <h5 class="card-title">Card title</h5>
-                  <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
-                  <a href="#" class="btn btn-primary">Go somewhere</a>
-                </div>
+      <div class="col-md-4">
+          <div class="card" style="width: 350px; margin-top: 50px;">
+              <img src="static/images/che1.jpg" class="card-img-top" alt="E-Health Tracking" style="height: 200px; object-fit: cover;">
+              <div class="card-body">
+                <h5 class="card-title">MY E-Prescription</h5>
+                <p class="card-text">Track your health metrics online, keeping you informed and proactive about your well-being.</p>
+                <a href="{{ url_for('display_prescriptions') }}" class="btn btn-primary">Check Now</a>
               </div>
-        </div>
+            </div>
+      </div>
 
-        <div class="col-md-4">
-            <div class="card" style="width: 350px;margin-top: 40px;">
-                <img src="static/images/4register.png" class="card-img-top" alt="...">
-                <div class="card-body">
-                  <h5 class="card-title">Card title</h5>
-                  <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
-                  <a href="#" class="btn btn-primary">Go somewhere</a>
-                </div>
-              </div>
-        </div>
-    </div>
+    
+  </div>
 </div>
+<!-- End Service Section -->
+ 
     {% include 'footer.html' %}
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js" integrity="sha384-rS5pF5siw5S5n5O0z5n5PvFg5F6F5g5l5i5o5f5f5" crossorigin="anonymous"></script>
 </body>

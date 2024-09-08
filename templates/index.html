@@ -6,7 +6,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-4bw+/aepP/YC94hEpVNVgiZdgIC5+VKNBQNGCHeKRQN+PtmoHDEXuppvnDJzQIu9" crossorigin="anonymous">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-HwwvtgBNo3bZJJLYd8oVXjrBZt8cqVSpeBNS5n7C8IVInixGAoxmnlMuBnhbgrkm" crossorigin="anonymous"></script>
     <link rel="stylesheet" type="text/css" href="{{ url_for('static' , filename = 'css/style.css')}}">
-    <title>CEYLON SECURE SOLUTIONS - WELCOME</title>
+    <title>PR CARE SOLUTIONS - WELCOME</title>
     <link rel="icon" type="images/x-icon" href="https://cdn4.iconfinder.com/data/icons/social-messaging-ui-color-and-shapes-1/177800/01-1024.png" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.0/css/all.min.css" rel="stylesheet">
@@ -17,49 +17,10 @@
     * contact me : https://linktr.ee/yasiruchamuditha for more information.
     -->
 </head>
-<!-- <body style="background: url(static/images/4register.png); background-size: cover;"> -->
-<body></body>
+<body>
     {% include 'nav.html' %}
     <div class="container-fluid" id="container">
-
-      <!-- ======= Home Section ======= -->
-<!-- <section id="home" class="d-flex align-items-center" style="background: url('static/images/r.jpg') top center; background-size: cover;">
-  <div class="container text-center position-relative" data-aos="fade-in" data-aos-delay="200">
-    <h1 class="display-4">Welcome to Praroz Healthcare</h1>
-    <h2 class="lead">We are a team of Specialized Doctors.<br>"Your devotion and care bring healing, comfort, and hope."</h2>
-    <a href="#about" class="btn-get-started scrollto btn btn-primary btn-lg mt-3">Learn More</a>
-  </div>
-</section> -->
-<!-- End Home -->
-
-<!-- Home -->
-  <!-- <div id="carouselExampleIndicators" class="carousel slide">
-        <div class="carousel-indicators">
-          <button type="button" class="btn btn-outline-secondary btn-lg " data-bs-target="#carouselExampleIndicators" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
-          <button type="button" class="btn btn-outline-secondary btn-lg " data-bs-target="#carouselExampleIndicators" data-bs-slide-to="1" aria-label="Slide 2">hello</button>
-          <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="2" aria-label="Slide 3"></button>
-        </div>
-        <div class="carousel-inner" style="height: 600px;">
-          <div class="carousel-item active">
-            <img src="static/images/r.jpg" class="d-block w-100" alt="...">
-          </div>
-          <div class="carousel-item">
-            <img src="static/images/OIP.jpg" class="d-block w-100" alt="...">
-          </div>
-          <div class="carousel-item">
-            <img src="static/images/OIP.jpg" class="d-block w-100" alt="...">
-          </div>
-        </div>
-        <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide="prev">
-          <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-          <span class="visually-hidden">Previous</span>
-        </button>
-        <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide="next">
-          <span class="carousel-control-next-icon" aria-hidden="true"></span>
-          <span class="visually-hidden">Next</span>
-        </button>
-    </div> -->
-      <!-- End Home -->
+      <!-- Home -->
       <!-- =======carousel start  ======= -->
       <div id="carouselExampleCombined" class="carousel slide" data-bs-ride="carousel" style="max-height: 600px; overflow: hidden;">
         <!-- Carousel Indicators -->
@@ -248,7 +209,7 @@
               <div class="card-body">
                 <h5 class="card-title">E-Doctor Appointment</h5>
                 <p class="card-text">Book your doctor's appointment online, ensuring quick access to specialized healthcare services.</p>
-                <a href="#" class="btn btn-primary">Learn more</a>
+                <a href="{{ url_for('book_doctor') }}"  class="btn btn-primary">Book Now</a>
               </div>
             </div>
       </div>
@@ -259,7 +220,7 @@
               <div class="card-body">
                 <h5 class="card-title">E-Prescription</h5>
                 <p class="card-text">Get prescription's Medicine via our system.This streamlining the process of managing and filling your medications.</p>
-                <a href="{{ url_for('upload_file') }}" class="btn btn-primary">Learn more</a>
+                <a href="{{ url_for('upload_file') }}" class="btn btn-primary">Book Now</a>
               </div>
             </div>
       </div>
@@ -268,22 +229,34 @@
           <div class="card" style="width: 350px;">
               <img src="static/images/r1.jpg" class="card-img-top" alt="E-Checkup Booking" style="height: 200px; object-fit: cover;">
               <div class="card-body">
-                <h5 class="card-title">E-Checkup Booking</h5>
+                <h5 class="card-title">E-Checkups</h5>
                 <p class="card-text">Easily book your regular health checkups online, choosing the best time and tests for your needs.</p>
-                <a href="{{ url_for('s_regularCheckup') }}" class="btn btn-primary">Learn more</a>
+                <a href="{{ url_for('s_regularCheckup') }}" class="btn btn-primary">Book Now</a>
               </div>
             </div>
       </div>
   </div>
 
   <div class="row">
+
+    <div class="col-md-4">
+      <div class="card" style="width: 350px; margin-top: 50px;">
+          <img src="static/images/p2.jpg" class="card-img-top" alt="E-Public Health" style="height: 200px; object-fit: cover;">
+          <div class="card-body">
+            <h5 class="card-title">MY E-Appoinment</h5>
+            <p class="card-text">Stay updated on public health services and information, promoting community health awareness.</p>
+            <a href="#" class="btn btn-primary">Check Now</a>
+          </div>
+        </div>
+    </div>
+
       <div class="col-md-4">
           <div class="card" style="width: 350px; margin-top: 50px;">
               <img src="static/images/t1.jpg" class="card-img-top" alt="E-Test Report" style="height: 200px; object-fit: cover;">
               <div class="card-body">
-                <h5 class="card-title">My E-Checkup Tracking</h5>
+                <h5 class="card-title">MY E-Checkups</h5>
                 <p class="card-text">Access your medical test results securely online, saving time and avoiding the need for physical reports.</p>
-                <a href="{{ url_for('display_checkups') }}" class="btn btn-primary">Learn more</a>
+                <a href="{{ url_for('display_checkups') }}" class="btn btn-primary">Check Now</a>
               </div>
             </div>
       </div>
@@ -292,23 +265,14 @@
           <div class="card" style="width: 350px; margin-top: 50px;">
               <img src="static/images/che1.jpg" class="card-img-top" alt="E-Health Tracking" style="height: 200px; object-fit: cover;">
               <div class="card-body">
-                <h5 class="card-title">My E-Prescription Tracking</h5>
+                <h5 class="card-title">MY E-Prescription</h5>
                 <p class="card-text">Track your health metrics online, keeping you informed and proactive about your well-being.</p>
-                <a href="{{ url_for('display_prescriptions') }}" class="btn btn-primary">Learn more</a>
+                <a href="{{ url_for('display_prescriptions') }}" class="btn btn-primary">Check Now</a>
               </div>
             </div>
       </div>
 
-      <div class="col-md-4">
-          <div class="card" style="width: 350px; margin-top: 50px;">
-              <img src="static/images/p2.jpg" class="card-img-top" alt="E-Public Health" style="height: 200px; object-fit: cover;">
-              <div class="card-body">
-                <h5 class="card-title">E-Public Health</h5>
-                <p class="card-text">Stay updated on public health services and information, promoting community health awareness.</p>
-                <a href="#" class="btn btn-primary">Learn more</a>
-              </div>
-            </div>
-      </div>
+    
   </div>
 </div>
 <!-- End Service Section -->
