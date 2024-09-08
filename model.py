@@ -80,20 +80,35 @@ def save_user(UserEmail, User_Role, hashed_password):
 def generate_jwt_token(UserEmail, jwt_secret):
     payload = {
         'user': UserEmail,
-        'exp': datetime.utcnow() + timedelta(minutes=5)  # Token expires in 5 minutes
+        'exp': datetime.utcnow() + timedelta(minutes=30)  # Token expires in 30 minutes
     }
     token = jwt.encode(payload, jwt_secret, algorithm='HS256')
     return token
 
-# Function to decode a JWT token
+# # Function to decode a JWT token
+# def decode_jwt_token(token, jwt_secret):
+#     try:
+#         decoded = jwt.decode(token, jwt_secret, algorithms=['HS256'])
+#         return decoded['user']
+#     except jwt.ExpiredSignatureError:
+#         print("Token has expired")
+#         return None  # Token has expired
+#     except jwt.InvalidTokenError:
+#         print("Invalid token")
+#         return None  # Invalid token
+
 def decode_jwt_token(token, jwt_secret):
     try:
         decoded = jwt.decode(token, jwt_secret, algorithms=['HS256'])
         return decoded['user']
+        
     except jwt.ExpiredSignatureError:
+        print("Token has expired")
         return None  # Token has expired
     except jwt.InvalidTokenError:
+        print("Invalid token")
         return None  # Invalid token
+
 
 # Function to generate a random verification code
 def generate_verification_code():
@@ -257,6 +272,20 @@ def init_db():
     new_values TEXT,
     FOREIGN KEY (changed_by) REFERENCES users(UserEmail),
     submitted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP           
+    )
+    ''')
+
+# Create the bookings table
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS bookings (
+    booking_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_email VARCHAR(255) NOT NULL,
+    patient_nic VARCHAR(255) NOT NULL,
+    preferred_date DATE NOT NULL,
+    preferred_time TIME NOT NULL,
+    doctor_email VARCHAR(255) NOT NULL,
+    specialization VARCHAR(255) NOT NULL,
+    submitted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )
     ''')
 

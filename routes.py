@@ -2,9 +2,9 @@
 
 from flask import Flask, request, jsonify, session, redirect, url_for, flash, render_template
 from model import (
-    decrypt_data, get_db_connection, get_user_by_UserEmail, save_checkup_details, save_user,
+    decrypt_data, encrypt_data, get_db_connection, get_user_by_UserEmail, save_checkup_details, save_user,
     generate_jwt_token, decode_jwt_token, generate_verification_code,
-    send_verification_email,save_doctor_details, init_db
+    send_verification_email,save_doctor_details
 )
 
 from datetime import datetime, timedelta
@@ -13,6 +13,7 @@ import secrets
 from werkzeug.utils import secure_filename
 from werkzeug.security import generate_password_hash, check_password_hash
 import os
+import jwt
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -147,7 +148,7 @@ def register():
         
         # Generate verification code
         verification_code = generate_verification_code()
-        code_expires_at = datetime.utcnow() + timedelta(minutes=10)  # Code expires in 10 minutes
+        code_expires_at = datetime.utcnow() + timedelta(minutes=5)  # Code expires in 5 minutes
 
         conn = get_db_connection()
         cursor = conn.cursor()
@@ -264,6 +265,9 @@ def login():
         token = generate_jwt_token(UserEmail, jwt_secret)
         session['jwt_token'] = token
         session['user_role'] = user_role  
+        session['user_email'] = UserEmail
+        print("user_role : ", user_role)
+        print("UserEmail : ", UserEmail)
 
         flash("Login successful!", "success")
         #return redirect(url_for('index'))
@@ -436,9 +440,13 @@ def get_checkup_details(checkup_id):
 
     return jsonify(decrypted_data), 200
 
-# Handle regular checkup card view and select regular checkup data with decryption.
+# # Handle regular checkup card view and select regular checkup data with decryption.
 @app.route('/checkups')
 def display_checkups():
+    # Get the logged-in user's email from the session
+    user_email = session.get('user_email')
+    print("User email from session: ", user_email)
+
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)  # Fetch data as dictionaries
     cursor.execute("SELECT * FROM regular_checkups")
@@ -446,16 +454,21 @@ def display_checkups():
     cursor.close()
     conn.close()
 
-    # Decrypt the data before passing it to the template
+    # Decrypt data and filter based on user's email
+    filtered_checkups = []
     for checkup in checkups:
+        # Decrypt data
         checkup['patient_nic'] = decrypt_data(checkup['patient_nic'])
         checkup['email'] = decrypt_data(checkup['email'])
         checkup['appointment_date'] = decrypt_data(checkup['appointment_date'])
         checkup['appointment_time'] = decrypt_data(checkup['appointment_time'])
         checkup['test_type'] = decrypt_data(checkup['test_type'])
+        
+        # Filter based on user's email
+        if checkup['email'] == user_email:
+            filtered_checkups.append(checkup)
 
-    return render_template('checkups.html', checkups=checkups)
-
+    return render_template('checkups.html', checkups=filtered_checkups)
 
 
 # Handle doctor registration form and insert doctor registration data with encryption.
@@ -506,19 +519,6 @@ def delete_user(UserEmail):
     flash('User deleted successfully!')
     return redirect(url_for('user_management'))
 
-# Route to delete a user based on their user ID
-# @app.route('/admin/users/delete/<int:user_id>', methods=['POST'])
-# def delete_user(user_id):
-#     connection = get_db_connection()
-#     cursor = connection.cursor()
-#     cursor.execute("DELETE FROM users WHERE id = %s", (user_id,))
-#     connection.commit()
-#     cursor.close()
-#     connection.close()
-#     flash('User deleted successfully!')
-#     return redirect(url_for('user_management'))
-
-
 # Route to update a user
 @app.route('/admin/users/update/<UserEmail>', methods=['GET', 'POST'])
 def update_user(UserEmail):
@@ -543,32 +543,6 @@ def update_user(UserEmail):
     cursor.close()
     connection.close()
     return render_template('update_user.html', user=user)
-
-# Route to update a user based on their user ID
-# @app.route('/admin/users/update/<int:user_id>', methods=['GET', 'POST'])
-# def update_user(user_id):
-#     connection = get_db_connection()
-#     cursor = connection.cursor(dictionary=True)
-
-#     if request.method == 'POST':
-#         user_role = request.form['user_role']
-#         is_verified = request.form['is_verified']
-
-#         cursor.execute("""
-#             UPDATE users 
-#             SET user_role = %s, is_verified = %s 
-#             WHERE id = %s
-#         """, (user_role, is_verified, user_id))
-#         connection.commit()
-#         flash('User updated successfully!')
-#         return redirect(url_for('user_management'))
-
-#     cursor.execute("SELECT * FROM users WHERE id = %s", (user_id,))
-#     user = cursor.fetchone()
-#     cursor.close()
-#     connection.close()
-#     return render_template('update_user.html', user=user)
-
 
 # Route to handle admin dashboard route in login method
 @app.route("/admin_dashboard")
@@ -605,18 +579,6 @@ def logs():
     return render_template('logs.html')
 
 
-
-# # Route to display the doctors in table view
-# @app.route('/admin/doctors')
-# def doctor_management():
-#     connection = get_db_connection()
-#     cursor = connection.cursor(dictionary=True)
-#     cursor.execute("SELECT * FROM doctors")
-#     doctors = cursor.fetchall()
-#     cursor.close()
-#     connection.close()
-#     return render_template('doctor_management.html', doctors=doctors)
-
 # Route to display the doctors in table view
 @app.route('/admin/doctors')
 def doctor_management():
@@ -652,18 +614,6 @@ def delete_doctors(user_email):
     connection.close()
     flash('Doctor deleted successfully!')
     return redirect(url_for('doctor_management'))
-
-# # Route to delete a user based on their user ID
-# # @app.route('/admin/users/delete/<int:user_id>', methods=['POST'])
-# # def delete_user(user_id):
-# #     connection = get_db_connection()
-# #     cursor = connection.cursor()
-# #     cursor.execute("DELETE FROM users WHERE id = %s", (user_id,))
-# #     connection.commit()
-# #     cursor.close()
-# #     connection.close()
-# #     flash('User deleted successfully!')
-# #     return redirect(url_for('user_management'))
 
 
 # Route to display the checkups in table view
@@ -702,3 +652,44 @@ def delete_checkups(patient_nic):
     connection.close()
     flash('checkups data deleted successfully!')
     return redirect(url_for('checkup_management'))
+
+
+@app.route('/book_doctor', methods=['GET', 'POST'])
+def book_doctor():
+    if request.method == 'POST':
+        # Handle form submission
+        user_email = session.get('user_email')
+        patient_nic = request.form['patient_nic']
+        preferred_date = request.form['preferred_date']
+        preferred_time = request.form['preferred_time']
+        doctor_email = request.form['doctor_email']
+        specialization = request.form['specialization']
+        
+        # Insert booking into the database
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute('''
+        INSERT INTO bookings (user_email, patient_nic, preferred_date, preferred_time, doctor_email, specialization)
+        VALUES (%s, %s, %s, %s, %s, %s)
+        ''', (user_email, patient_nic, preferred_date, preferred_time, doctor_email, specialization))
+        conn.commit()
+        cursor.close()
+        conn.close()
+        
+        flash("Booking successfully created!", "success")
+        return redirect(url_for('index'))
+    
+    # Fetch and decrypt doctor data for the form
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute('SELECT * FROM doctors')
+    doctors = cursor.fetchall()
+    cursor.close()
+    conn.close()
+    
+    # Decrypt doctor data
+    for doctor in doctors:
+        doctor['user_email'] = decrypt_data(doctor['user_email'])
+        doctor['specialization'] = decrypt_data(doctor['specialization'])
+    
+    return render_template('book_doctor.html', doctors=doctors)
