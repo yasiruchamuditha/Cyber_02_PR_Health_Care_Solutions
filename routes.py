@@ -3,7 +3,7 @@
 from flask import Flask, request, jsonify, session, redirect, url_for, flash, render_template
 from model import (
     decrypt_data, encrypt_data, get_db_connection, get_user_by_UserEmail, save_checkup_details, save_user,
-    generate_jwt_token, decode_jwt_token, generate_verification_code,
+    generate_jwt_token, decode_jwt_token, generate_verification_code, send_successful_password_reset_email,
     send_verification_email,save_doctor_details
 )
 
@@ -266,8 +266,9 @@ def login():
         session['jwt_token'] = token
         session['user_role'] = user_role  
         session['user_email'] = UserEmail
-        print("user_role : ", user_role)
-        print("UserEmail : ", UserEmail)
+        
+        # Record the login session
+        record_user_login(UserEmail)
 
         flash("Login successful!", "success")
         #return redirect(url_for('index'))
@@ -380,16 +381,34 @@ def reset_password():
 
         session.pop('verified_user', None)  # Clear the session
         flash("Password reset successfully! Please log in.", "success")
+        # Send success email
+        send_successful_password_reset_email(UserEmail)
         return redirect(url_for('login'))
 
     return render_template('reset_password.html')
 
-# Handle user logout user page
+# # Handle user logout user page
+# @app.route('/logout')
+# def logout():
+#     session.pop('jwt_token', None)
+#     flash("You have been logged out.", "success")
+#     return redirect(url_for('index'))
+
+# Handle user logout
 @app.route('/logout')
 def logout():
+    user_email = session.get('user_email')
+
+    if user_email:
+        # Record the logout session
+        record_user_logout(user_email)
+    
+    # Clear the session
     session.pop('jwt_token', None)
+    session.pop('user_email', None)  # Also remove the user email from the session
     flash("You have been logged out.", "success")
     return redirect(url_for('index'))
+
 
 # Handle regular checkup form and insert regular checkup data with encryption.
 @app.route("/regular_checkup", methods=['GET', 'POST'])
@@ -414,7 +433,7 @@ def regular_checkup():
 
     return render_template('regular_checkup.html')
 
-
+# Handle regular checkup card view and select regular checkup data with decryption.
 @app.route('/checkup/<int:checkup_id>', methods=['GET'])
 def get_checkup_details(checkup_id):
     conn = get_db_connection()
@@ -628,7 +647,7 @@ def checkup_management():
     
     # Decrypt sensitive fields
     for checkup in checkups:
-        checkup['patient_nic '] = decrypt_data(checkup['patient_nic'])
+        checkup['patient_nic'] = decrypt_data(checkup['patient_nic'])  # Corrected here
         checkup['email'] = decrypt_data(checkup['email'])
         checkup['appointment_date'] = decrypt_data(checkup['appointment_date'])
         checkup['appointment_time'] = decrypt_data(checkup['appointment_time'])
@@ -654,6 +673,8 @@ def delete_checkups(patient_nic):
     return redirect(url_for('checkup_management'))
 
 
+
+# Route to display the bookings in table view
 @app.route('/book_doctor', methods=['GET', 'POST'])
 def book_doctor():
     if request.method == 'POST':
@@ -665,13 +686,17 @@ def book_doctor():
         doctor_email = request.form['doctor_email']
         specialization = request.form['specialization']
         
+        # Encrypt sensitive data
+        encrypted_doctor_email = encrypt_data(doctor_email)
+        encrypted_specialization = encrypt_data(specialization)
+        
         # Insert booking into the database
         conn = get_db_connection()
         cursor = conn.cursor()
         cursor.execute('''
-        INSERT INTO bookings (user_email, patient_nic, preferred_date, preferred_time, doctor_email, specialization)
+        INSERT INTO appointment_bookings (user_email, patient_nic, preferred_date, preferred_time, doctor_email, specialization)
         VALUES (%s, %s, %s, %s, %s, %s)
-        ''', (user_email, patient_nic, preferred_date, preferred_time, doctor_email, specialization))
+        ''', (user_email, patient_nic, preferred_date, preferred_time, encrypted_doctor_email, encrypted_specialization))
         conn.commit()
         cursor.close()
         conn.close()
@@ -693,3 +718,67 @@ def book_doctor():
         doctor['specialization'] = decrypt_data(doctor['specialization'])
     
     return render_template('book_doctor.html', doctors=doctors)
+
+
+# Route to display the bookings in table view
+def record_user_login(user_email):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute('''
+    INSERT INTO user_sessions (user_id, login_time)
+    VALUES (%s, %s)
+    ''', (user_email, datetime.utcnow()))
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+# Route to display the bookings in table view
+def record_user_logout(user_email):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute('''
+    UPDATE user_sessions
+    SET logout_time = %s
+    WHERE user_id = %s AND logout_time IS NULL
+    ''', (datetime.utcnow(), user_email))
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+
+# Route to display the appointments in table view
+@app.route('/admin/appointments')
+def appointment_management():
+    connection = get_db_connection()
+    cursor = connection.cursor(dictionary=True)
+    
+    # Fetch encrypted data from the database
+    cursor.execute("SELECT * FROM appointment_bookings")
+    appointments = cursor.fetchall()
+    
+    # Decrypt sensitive fields
+    for appointment in appointments:
+        appointment['patient_nic'] = decrypt_data(appointment['patient_nic'])  # Corrected here
+        appointment['user_email'] = decrypt_data(appointment['user_email'])
+        appointment['preferred_date'] = decrypt_data(appointment['preferred_date'])
+        appointment['preferred_time'] = decrypt_data(appointment['preferred_time'])
+        appointment['doctor_email'] = decrypt_data(appointment['doctor_email'])
+        appointment['specialization'] = decrypt_data(appointment['specialization'])
+    
+    cursor.close()
+    connection.close()
+    
+    # Render the template with decrypted data
+    return render_template('appointment_management.html', appointments=appointments)
+
+# Route to delete an appointment based on its booking_id (primary key)
+@app.route('/admin/appointments/delete/<int:booking_id>', methods=['POST'])
+def delete_appointment(booking_id):
+    connection = get_db_connection()
+    cursor = connection.cursor()
+    cursor.execute("DELETE FROM appointment_bookings WHERE booking_id = %s", (booking_id,))
+    connection.commit()
+    cursor.close()
+    connection.close()
+    flash('Appointment booking deleted successfully!')
+    return redirect(url_for('appointment_management'))

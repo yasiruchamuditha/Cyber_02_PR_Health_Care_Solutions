@@ -187,7 +187,76 @@ def save_doctor_details(user_email, medical_no, specialization, grad_year, exper
     cursor.close()
     conn.close()
 
-    
+
+def send_successful_password_reset_email(user_email):
+    smtp_server = 'smtp.example.com'  # Replace with your SMTP server
+    smtp_port = 587  # Typically 587 for TLS
+    smtp_user = 'prcaretest@gmail.com'  # Replace with your SMTP email
+    smtp_password = 'rmtoagnrrqvjnzne'  # Replace with your SMTP password
+
+    subject = 'Password Reset Successful'
+    body = '''
+    Dear User,
+
+    Your password has been successfully reset. If you did not request this change, please contact our support team immediately.
+
+    Best regards,
+    Your Company Name
+    '''
+
+    msg = MIMEMultipart()
+    msg['From'] = smtp_user
+    msg['To'] = user_email
+    msg['Subject'] = subject
+
+    msg.attach(MIMEText(body, 'plain'))
+
+    try:
+        with smtplib.SMTP(smtp_server, smtp_port) as server:
+            server.starttls()  # Upgrade the connection to a secure encrypted SSL/TLS connection
+            server.login(smtp_user, smtp_password)
+            server.sendmail(msg['From'], msg['To'], msg.as_string())
+        print("Email sent successfully.")
+    except Exception as e:
+        print(f"Error sending email: {e}")
+
+
+def send_welcome_email(user_email):
+    smtp_server = 'smtp.example.com'  # Replace with your SMTP server
+    smtp_port = 587  # Typically 587 for TLS
+    smtp_user = 'your_email@example.com'  # Replace with your SMTP email
+    smtp_password = 'your_password'  # Replace with your SMTP password
+
+    subject = 'Welcome to Our Service!'
+    body = f'''
+    Dear User,
+
+    Welcome to our service! We're excited to have you on board.
+
+    Your registration was successful. You can now log in to your account and start using our features.
+
+    If you have any questions or need assistance, feel free to contact our support team.
+
+    Best regards,
+    Your Company Name
+    '''
+
+    msg = MIMEMultipart()
+    msg['From'] = smtp_user
+    msg['To'] = user_email
+    msg['Subject'] = subject
+
+    msg.attach(MIMEText(body, 'plain'))
+
+    try:
+        with smtplib.SMTP(smtp_server, smtp_port) as server:
+            server.starttls()  # Upgrade the connection to a secure encrypted SSL/TLS connection
+            server.login(smtp_user, smtp_password)
+            server.sendmail(msg['From'], msg['To'], msg.as_string())
+        print("Welcome email sent successfully.")
+    except Exception as e:
+        print(f"Error sending welcome email: {e}")
+
 
 # Function to initialize the database
 def init_db():
@@ -277,7 +346,7 @@ def init_db():
 
 # Create the bookings table
     cursor.execute('''
-    CREATE TABLE IF NOT EXISTS bookings (
+    CREATE TABLE IF NOT EXISTS appointment_bookings (
     booking_id INT AUTO_INCREMENT PRIMARY KEY,
     user_email VARCHAR(255) NOT NULL,
     patient_nic VARCHAR(255) NOT NULL,
