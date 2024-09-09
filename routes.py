@@ -23,7 +23,7 @@ app.secret_key = secrets.token_urlsafe(32)
 # Secret key for JWT
 jwt_secret = secrets.token_urlsafe(32)
 # Secret key for RECAPTCHA  
-RECAPTCHA_SECRET_KEY = '6LdyBisqAAAAAFMn8RKKJU3yxIxggaX6kVk1fi5G'  
+RECAPTCHA_SECRET_KEY = 'key'  
 
 # Function to load the secret key from a file
 def load_secret_key():

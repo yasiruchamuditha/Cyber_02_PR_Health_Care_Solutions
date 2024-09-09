@@ -85,17 +85,6 @@ def generate_jwt_token(UserEmail, jwt_secret):
     token = jwt.encode(payload, jwt_secret, algorithm='HS256')
     return token
 
-# # Function to decode a JWT token
-# def decode_jwt_token(token, jwt_secret):
-#     try:
-#         decoded = jwt.decode(token, jwt_secret, algorithms=['HS256'])
-#         return decoded['user']
-#     except jwt.ExpiredSignatureError:
-#         print("Token has expired")
-#         return None  # Token has expired
-#     except jwt.InvalidTokenError:
-#         print("Invalid token")
-#         return None  # Invalid token
 
 def decode_jwt_token(token, jwt_secret):
     try:
@@ -116,8 +105,8 @@ def generate_verification_code():
 
 # Function to send verification code via email
 def send_verification_email(to_email, code):
-    from_email = "prcaretest@gmail.com"
-    from_password = "rmtoagnrrqvjnzne"
+    from_email = "email"
+    from_password = "email_password"
 
     subject = "Your Verification Code"
     body = f"Your verification code is: {code}"
@@ -191,8 +180,8 @@ def save_doctor_details(user_email, medical_no, specialization, grad_year, exper
 def send_successful_password_reset_email(user_email):
     smtp_server = 'smtp.example.com'  # Replace with your SMTP server
     smtp_port = 587  # Typically 587 for TLS
-    smtp_user = 'prcaretest@gmail.com'  # Replace with your SMTP email
-    smtp_password = 'rmtoagnrrqvjnzne'  # Replace with your SMTP password
+    smtp_user = 'email'  # Replace with your SMTP email
+    smtp_password = 'password'  # Replace with your SMTP password
 
     subject = 'Password Reset Successful'
     body = '''
