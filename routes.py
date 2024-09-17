@@ -387,12 +387,6 @@ def reset_password():
 
     return render_template('reset_password.html')
 
-# # Handle user logout user page
-# @app.route('/logout')
-# def logout():
-#     session.pop('jwt_token', None)
-#     flash("You have been logged out.", "success")
-#     return redirect(url_for('index'))
 
 # Handle user logout
 @app.route('/logout')
@@ -402,6 +396,8 @@ def logout():
     if user_email:
         # Record the logout session
         record_user_logout(user_email)
+        # Track logout action
+        track_user_action(user_email, 'logout')
     
     # Clear the session
     session.pop('jwt_token', None)
@@ -427,6 +423,11 @@ def regular_checkup():
 
         # Save the checkup details in the database
         save_checkup_details(patient_nic, email, appointment_date, appointment_time, test_type)
+
+        # Track checkup submission
+        user_email = session.get('user_email')
+        track_user_action(user_email, f"submitted checkup for patient {patient_nic}")
+
 
         flash("Your checkup details have been submitted successfully!", "success")
         return render_template('services.html')
@@ -782,3 +783,46 @@ def delete_appointment(booking_id):
     connection.close()
     flash('Appointment booking deleted successfully!')
     return redirect(url_for('appointment_management'))
+
+
+# Route to display the user sessions in table view
+def track_user_session(user_id, login_time, logout_time=None):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    cursor.execute('''
+        INSERT INTO user_sessions (user_id, login_time, logout_time)
+        VALUES (%s, %s, %s)
+    ''', (user_id, login_time, logout_time))
+
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+# Route to display the user actions in table view
+def track_user_action(user_id, action_type, action_time, details=None):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    cursor.execute('''
+        INSERT INTO user_actions (user_id, action_type, action_time, details)
+        VALUES (%s, %s, %s, %s)
+    ''', (user_id, action_type, action_time, details))
+
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+# Route to display the user actions in table view
+def audit_database_change(table_name, record_id, change_type, change_time, changed_by, old_values=None, new_values=None):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    cursor.execute('''
+        INSERT INTO database_audit (table_name, record_id, change_type, change_time, changed_by, old_values, new_values)
+        VALUES (%s, %s, %s, %s, %s, %s, %s)
+    ''', (table_name, record_id, change_type, change_time, changed_by, old_values, new_values))
+
+    conn.commit()
+    cursor.close()
+    conn.close()
