@@ -80,7 +80,7 @@ def save_user(UserEmail, User_Role, hashed_password):
 def generate_jwt_token(UserEmail, jwt_secret):
     payload = {
         'user': UserEmail,
-        'exp': datetime.utcnow() + timedelta(minutes=30)  # Token expires in 30 minutes
+        'exp': datetime.utcnow() + timedelta(minutes=2)  # Token expires in 2 minutes
     }
     token = jwt.encode(payload, jwt_secret, algorithm='HS256')
     return token
@@ -103,27 +103,179 @@ def decode_jwt_token(token, jwt_secret):
 def generate_verification_code():
     return secrets.token_hex(3).upper()  # Generates a 6-character alphanumeric code
 
-# Function to send verification code via email
-def send_verification_email(to_email, code):
-    from_email = "email"
-    from_password = "email_password"
+def send_welcome_email(to_email):
+    from_email = "prcaretest@gmail.com"
+    from_password = "rmtoagnrrqvjnzne"  # environment variable in production
 
-    subject = "Your Verification Code"
-    body = f"Your verification code is: {code}"
+    subject = 'Welcome to PRCARE Solutions!'
+    # Customized HTML body with styling
+    body = f'''
+    <html>
+    <body style="font-family: Arial, sans-serif; line-height: 1.6;">
+        <div style="max-width: 600px; margin: auto; padding: 20px; text-align: left;">
+            <h2 style="color: #333;">Welcome to PRCARE Solutions!</h2>
+            <p>Dear User,</p>
+            <p>We are excited to welcome you to PRCARE Solutions! Your registration was successful, and you can now log in to your account to explore all the features we offer.</p>
+            <p>Here are some steps to help you get started:</p>
+            <ul>
+                <li>Explore our <strong>dashboard</strong> for managing your health services.</li>
+                <li>Update your <strong>profile information</strong> to ensure we have the most accurate data.</li>
+                <li>Check out our <strong>support center</strong> if you have any questions or need assistance.</li>
+            </ul>
+            <p>If you have any issues or need support, don't hesitate to reach out to our team at <a href="mailto:prcaretest@gmail.com">support@prcaresolutions.com</a>.</p>
+            <p>We are thrilled to have you with us and look forward to serving you!</p>
+            <p>Best regards,<br><strong>The PRCARE Solutions Team</strong></p>
+            <hr style="border: none; border-top: 1px solid #ddd; margin: 20px 0;">
+            <p style="font-size: 12px; color: #555;">This email was sent to {to_email}. If you did not sign up for this service, please ignore this email.</p>
+        </div>
+    </body>
+    </html>
+    '''
 
-    msg = MIMEMultipart()
+    msg = MIMEMultipart("alternative")
     msg['From'] = from_email
     msg['To'] = to_email
     msg['Subject'] = subject
 
-    msg.attach(MIMEText(body, 'plain'))
+    # Attach the HTML body
+    msg.attach(MIMEText(body, 'html'))
 
+    # Send the email
     server = smtplib.SMTP('smtp.gmail.com', 587)
     server.starttls()
     server.login(from_email, from_password)
     text = msg.as_string()
     server.sendmail(from_email, to_email, text)
     server.quit()
+
+
+
+#Account verification - registration process
+def send_verification_email(to_email, code):
+    from_email = "prcaretest@gmail.com"
+    from_password = "rmtoagnrrqvjnzne"  # Replace with environment variable in production
+
+    subject = "Account Verification Code"
+    # Updated HTML body with styling similar to the image
+    body = f"""
+    <html>
+    <body style="font-family: Arial, sans-serif; line-height: 1.6;">
+        <div style="max-width: 600px; margin: auto; border: 1px solid #ddd; padding: 20px; text-align: center;">
+            <img src="https://cdn4.iconfinder.com/data/icons/social-messaging-ui-color-and-shapes-1/177800/01-1024.png" width="100" alt="logo">
+            <h2 style="font-size: 24px; margin-bottom: 20px;">Verify your PRCARE account</h2>
+            <p style="font-size: 16px;">PRCARE received a request to use <strong>{to_email}</strong> as a Account verification email for PRCARE Account.</p>
+            <p style="font-size: 16px;">Use this code to finish account verification process :</p>
+            <p style="font-size: 32px; font-weight: bold; margin: 20px 0;">{code}</p>
+            <p style="font-size: 16px;">This code will expire in 5 minutes.</p>
+            <hr style="border: none; border-top: 1px solid #ddd; margin: 20px 0;">
+            <p style="font-size: 14px; color: #555;">If you don’t recognize <strong>{from_email}</strong>, you can safely ignore this email.</p>
+            <p style="font-size: 14px; color: #555;">Please contact us through this <strong>{from_email}</strong> for more details.</p>
+            <p style="font-size: 14px; color: #555;">Thanks for helping us keep your account secure.</p>
+            <p style="font-size: 14px; color: #555;"><strong>Best regards,</strong><br>The PRCARE Team</p>
+        </div>
+    </body>
+    </html>
+    """
+
+    msg = MIMEMultipart("alternative")
+    msg['From'] = from_email
+    msg['To'] = to_email
+    msg['Subject'] = subject
+
+    # Attach the HTML body
+    msg.attach(MIMEText(body, 'html'))
+
+    # Send the email
+    server = smtplib.SMTP('smtp.gmail.com', 587)
+    server.starttls()
+    server.login(from_email, from_password)
+    text = msg.as_string()
+    server.sendmail(from_email, to_email, text)
+    server.quit()
+
+#Account verification - Recovery process
+def send_recovery_code(to_email, code):
+    from_email = "prcaretest@gmail.com"
+    from_password = "rmtoagnrrqvjnzne"  # environment variable in production
+
+    subject = "Account Recovery Code"
+    # Updated HTML body with styling similar to the image
+    body = f"""
+    <html>
+    <body style="font-family: Arial, sans-serif; line-height: 1.6;">
+        <div style="max-width: 600px; margin: auto; border: 1px solid #ddd; padding: 20px; text-align: center;">
+            <img src="https://cdn4.iconfinder.com/data/icons/social-messaging-ui-color-and-shapes-1/177800/01-1024.png" width="100" alt="logo">
+            <h2 style="font-size: 24px; margin-bottom: 20px;">Verify your PRCARE account</h2>
+            <p style="font-size: 16px;">PRCARE received a request to use <strong>{to_email}</strong> as a Account verification email for PRCARE Account.</p>
+            <p style="font-size: 16px;">Use this code to finish account verification process :</p>
+            <p style="font-size: 32px; font-weight: bold; margin: 20px 0;">{code}</p>
+            <p style="font-size: 16px;">This code will expire in 5 minutes.</p>
+            <hr style="border: none; border-top: 1px solid #ddd; margin: 20px 0;">
+            <p style="font-size: 14px; color: #555;">If you don’t recognize <strong>{from_email}</strong>, you can safely ignore this email.</p>
+            <p style="font-size: 14px; color: #555;">Please contact us through this <strong>{from_email}</strong> for more details.</p>
+            <p style="font-size: 14px; color: #555;">Thanks for helping us keep your account secure.</p>
+            <p style="font-size: 14px; color: #555;"><strong>Best regards,</strong><br>The PRCARE Team</p>
+        </div>
+    </body>
+    </html>
+    """
+
+    msg = MIMEMultipart("alternative")
+    msg['From'] = from_email
+    msg['To'] = to_email
+    msg['Subject'] = subject
+
+    # Attach the HTML body
+    msg.attach(MIMEText(body, 'html'))
+
+    # Send the email
+    server = smtplib.SMTP('smtp.gmail.com', 587)
+    server.starttls()
+    server.login(from_email, from_password)
+    text = msg.as_string()
+    server.sendmail(from_email, to_email, text)
+    server.quit()
+
+#Password reset succesful email
+def send_successful_password_reset_email(to_email):
+    from_email = "prcaretest@gmail.com"
+    from_password = "rmtoagnrrqvjnzne"  # Replace with environment variable in production
+
+    subject = "Password Reset Successful"
+    body = f"""
+    <html>
+    <body style="font-family: Arial, sans-serif; line-height: 1.6;">
+        <div style="max-width: 600px; margin: auto; padding: 20px; text-align: left;">
+            <h2 style="color: #333;">Your Password Has Been Reset</h2>
+            <p>Dear User,</p>
+            <p>We wanted to let you know that your password has been successfully reset. You can now use your new password to log in to your account.</p>
+            <p>If you did not request this change or believe an unauthorized person has accessed your account, please contact our support team immediately at <a href="mailto:prcaretest@gmail.com">support@prcaresolutions.com</a>.</p>
+            <p>For your security, we recommend changing your password regularly and ensuring it is unique to our service.</p>
+            <p>Thank you for choosing PRCARE Solutions. We're here to help if you have any further questions or concerns.</p>
+            <p>Best regards,<br><strong>The PRCARE Solutions Team</strong></p>
+            <hr style="border: none; border-top: 1px solid #ddd; margin: 20px 0;">
+            <p style="font-size: 12px; color: #555;">This email was sent to you because of a password reset request. If you did not make this request, please contact support immediately.</p>
+        </div>
+    </body>
+    </html>
+    """
+
+    msg = MIMEMultipart()
+    msg['From'] = from_email
+    msg['To'] = to_email
+    msg['Subject'] = subject
+
+     # Attach the HTML body
+    msg.attach(MIMEText(body, 'html'))
+
+    # Send the email
+    server = smtplib.SMTP('smtp.gmail.com', 587)
+    server.starttls()
+    server.login(from_email, from_password)
+    text = msg.as_string()
+    server.sendmail(from_email, to_email, text)
+    server.quit()
+
 
 # Function to save checkup details with encryption
 def save_checkup_details(patient_nic, email, appointment_date, appointment_time, test_type):
@@ -177,76 +329,6 @@ def save_doctor_details(user_email, medical_no, specialization, grad_year, exper
     conn.close()
 
 
-def send_successful_password_reset_email(user_email):
-    smtp_server = 'smtp.example.com'  # Replace with your SMTP server
-    smtp_port = 587  # Typically 587 for TLS
-    smtp_user = 'email'  # Replace with your SMTP email
-    smtp_password = 'password'  # Replace with your SMTP password
-
-    subject = 'Password Reset Successful'
-    body = '''
-    Dear User,
-
-    Your password has been successfully reset. If you did not request this change, please contact our support team immediately.
-
-    Best regards,
-    Your Company Name
-    '''
-
-    msg = MIMEMultipart()
-    msg['From'] = smtp_user
-    msg['To'] = user_email
-    msg['Subject'] = subject
-
-    msg.attach(MIMEText(body, 'plain'))
-
-    try:
-        with smtplib.SMTP(smtp_server, smtp_port) as server:
-            server.starttls()  # Upgrade the connection to a secure encrypted SSL/TLS connection
-            server.login(smtp_user, smtp_password)
-            server.sendmail(msg['From'], msg['To'], msg.as_string())
-        print("Email sent successfully.")
-    except Exception as e:
-        print(f"Error sending email: {e}")
-
-
-def send_welcome_email(user_email):
-    smtp_server = 'smtp.example.com'  # Replace with your SMTP server
-    smtp_port = 587  # Typically 587 for TLS
-    smtp_user = 'your_email@example.com'  # Replace with your SMTP email
-    smtp_password = 'your_password'  # Replace with your SMTP password
-
-    subject = 'Welcome to Our Service!'
-    body = f'''
-    Dear User,
-
-    Welcome to our service! We're excited to have you on board.
-
-    Your registration was successful. You can now log in to your account and start using our features.
-
-    If you have any questions or need assistance, feel free to contact our support team.
-
-    Best regards,
-    Your Company Name
-    '''
-
-    msg = MIMEMultipart()
-    msg['From'] = smtp_user
-    msg['To'] = user_email
-    msg['Subject'] = subject
-
-    msg.attach(MIMEText(body, 'plain'))
-
-    try:
-        with smtplib.SMTP(smtp_server, smtp_port) as server:
-            server.starttls()  # Upgrade the connection to a secure encrypted SSL/TLS connection
-            server.login(smtp_user, smtp_password)
-            server.sendmail(msg['From'], msg['To'], msg.as_string())
-        print("Welcome email sent successfully.")
-    except Exception as e:
-        print(f"Error sending welcome email: {e}")
-
-
 # Function to initialize the database
 def init_db():
     conn = get_db_connection()
@@ -298,7 +380,6 @@ def init_db():
         user_id VARCHAR(255) NOT NULL,
         login_time DATETIME NOT NULL,
         logout_time DATETIME,
-        FOREIGN KEY (user_id) REFERENCES users(UserEmail),
         submitted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP           
     )
     ''')
@@ -311,7 +392,6 @@ def init_db():
     action_type VARCHAR(255) NOT NULL,
     action_time DATETIME NOT NULL,
     details TEXT,
-    FOREIGN KEY (user_id) REFERENCES users(UserEmail),
     submitted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP           
     )
     ''')
@@ -328,7 +408,6 @@ def init_db():
     changed_by VARCHAR(255) NOT NULL,
     old_values TEXT,
     new_values TEXT,
-    FOREIGN KEY (changed_by) REFERENCES users(UserEmail),
     submitted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP           
     )
     ''')
@@ -339,8 +418,8 @@ def init_db():
     booking_id INT AUTO_INCREMENT PRIMARY KEY,
     user_email VARCHAR(255) NOT NULL,
     patient_nic VARCHAR(255) NOT NULL,
-    preferred_date DATE NOT NULL,
-    preferred_time TIME NOT NULL,
+    preferred_date VARCHAR(255) NOT NULL,
+    preferred_time VARCHAR(255) NOT NULL,
     doctor_email VARCHAR(255) NOT NULL,
     specialization VARCHAR(255) NOT NULL,
     submitted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
