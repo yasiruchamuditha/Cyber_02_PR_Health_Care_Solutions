@@ -3,17 +3,17 @@
 from flask import Flask, request, jsonify, session, redirect, url_for, flash, render_template
 from model import (
     decrypt_data, encrypt_data, get_db_connection, get_user_by_UserEmail, save_checkup_details, save_user,
-    generate_jwt_token, decode_jwt_token, generate_verification_code, send_successful_password_reset_email,
-    send_verification_email,save_doctor_details
+    generate_jwt_token, decode_jwt_token, generate_verification_code, send_recovery_code, send_successful_password_reset_email,
+    send_verification_email,save_doctor_details, send_welcome_email
 )
 
-from datetime import datetime, timedelta
-import requests
-import secrets
-from werkzeug.utils import secure_filename
-from werkzeug.security import generate_password_hash, check_password_hash
-import os
-import jwt
+from datetime import datetime, timedelta # Import the datetime class from the datetime module    
+import requests # Import the requests module
+import secrets # Import the secrets module
+from werkzeug.utils import secure_filename # Import the secure_filename function from the werkzeug.utils module
+from werkzeug.security import generate_password_hash, check_password_hash # Import the generate_password_hash and check_password_hash functions from the werkzeug.security module
+import os # Import the os module
+import jwt # Import the jwt module
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -23,7 +23,7 @@ app.secret_key = secrets.token_urlsafe(32)
 # Secret key for JWT
 jwt_secret = secrets.token_urlsafe(32)
 # Secret key for RECAPTCHA  
-RECAPTCHA_SECRET_KEY = 'key'  
+RECAPTCHA_SECRET_KEY = 'RECAPTCHA_SECRET_KEY'  
 
 # Function to load the secret key from a file
 def load_secret_key():
@@ -44,6 +44,23 @@ app.config['SECRET_KEY'] = load_secret_key()  # Load secret key from file
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
+# Function to create user-specific directory
+def create_user_folder(user_email):
+    user_folder = os.path.join(app.config['UPLOAD_FOLDER'], user_email)
+    if not os.path.exists(user_folder):
+        os.makedirs(user_folder)
+    return user_folder
+
+# Function to add timestamp to filename
+def add_timestamp_to_filename(filename):
+    # Get current date and time
+    current_time = datetime.now().strftime('%Y%m%d_%H%M%S')
+    # Split the file name and extension
+    name, ext = os.path.splitext(filename)
+    # Create new filename with timestamp
+    return f"{name}_{current_time}{ext}"
+
+
 # Routes
 # Route to upload prescription
 @app.route('/upload', methods=['GET', 'POST'])
@@ -52,6 +69,8 @@ def upload_file():
     if 'jwt_token' not in session:
         flash("You need to log in to upload a prescription.", "warning")
         return redirect(url_for('login'))
+    
+    user_email = session['user_email']  # Get the logged-in user's email from the session
     
     if request.method == 'POST':
         # Check if the post request has the file part
@@ -69,8 +88,16 @@ def upload_file():
         # Check if the file is allowed (correct extension)
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
+            filename_with_timestamp = add_timestamp_to_filename(filename)
             # Save the file to the specified upload folder
-            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            #file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            # Create a folder for the user based on their email
+            user_folder = create_user_folder(user_email)
+            # Save the file in the user's folder
+            #file_path = os.path.join(user_folder, filename)
+            # Save the file in the user's folder with the new filename
+            file_path = os.path.join(user_folder, filename_with_timestamp)
+            file.save(file_path)
             flash('File successfully uploaded', 'success')
             return redirect(url_for('services'))
         else:
@@ -120,8 +147,35 @@ def s_regularCheckup():
 # Handle prescriptions form in service page.
 @app.route('/prescriptions')
 def display_prescriptions():
+    # Check if the user is logged in
+    if 'user_email' not in session:
+        flash("You need to log in to view prescriptions.", "warning")
+        return redirect(url_for('login'))
     # List all files in the uploads directory
-    files = os.listdir(app.config['UPLOAD_FOLDER'])
+    #files = os.listdir(app.config['UPLOAD_FOLDER'])
+    #return render_template('prescriptions.html', files=files)
+    # Get the logged-in user's email from the JWT token
+    user_email = session['user_email']  # Get the logged-in user's email from the session
+    
+    # Create a folder path for the user
+    user_folder = os.path.join(app.config['UPLOAD_FOLDER'], user_email)
+
+    # Ensure the user's folder exists
+    if os.path.exists(user_folder):
+        # List all files in the user's folder and get their creation times
+        files = []
+        for filename in os.listdir(user_folder):
+            file_path = os.path.join(user_folder, filename)
+            if os.path.isfile(file_path):
+                # Get the file's modification time
+                timestamp = os.path.getmtime(file_path)
+                # Convert to a readable date format
+                upload_time = datetime.fromtimestamp(timestamp).strftime('%Y-%m-%d %H:%M:%S')
+                files.append({'name': filename, 'upload_time': upload_time})
+    else:
+        files = []  # If no folder, assume no files uploaded yet
+
+    # Pass the files to the template for display
     return render_template('prescriptions.html', files=files)
 
 # Handle user registration
@@ -200,6 +254,7 @@ def verify():
         conn.close()
 
         flash("Account verified successfully! Please log in.", "success")
+        send_welcome_email(UserEmail)
         return redirect(url_for('login'))
     return render_template('verification.html')
 
@@ -305,7 +360,8 @@ def forgot_password():
         conn.close()
 
         # Send the verification code via email
-        send_verification_email(UserEmail, verification_code)
+        #send_verification_email(UserEmail, verification_code)
+        send_recovery_code(UserEmail, verification_code)
 
         flash("A verification code has been sent to your email.", "success")
         return redirect(url_for('verify_code', email=UserEmail))
@@ -426,7 +482,7 @@ def regular_checkup():
 
         # Track checkup submission
         user_email = session.get('user_email')
-        track_user_action(user_email, f"submitted checkup for patient {patient_nic}")
+        #track_user_action(user_email, f"submitted checkup for patient {patient_nic}")
 
 
         flash("Your checkup details have been submitted successfully!", "success")
@@ -463,9 +519,13 @@ def get_checkup_details(checkup_id):
 # # Handle regular checkup card view and select regular checkup data with decryption.
 @app.route('/checkups')
 def display_checkups():
+    # Check if user is logged in
+    if 'jwt_token' not in session:
+        flash("You need to log in to access this page.", "warning")
+        return redirect(url_for('login'))
     # Get the logged-in user's email from the session
     user_email = session.get('user_email')
-    print("User email from session: ", user_email)
+    #print("User email from session: ", user_email)
 
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)  # Fetch data as dictionaries
@@ -678,6 +738,11 @@ def delete_checkups(patient_nic):
 # Route to display the bookings in table view
 @app.route('/book_doctor', methods=['GET', 'POST'])
 def book_doctor():
+    # Check if the user is logged in
+    if 'jwt_token' not in session:
+        flash("You need to log in to System.", "warning")
+        return redirect(url_for('login'))
+
     if request.method == 'POST':
         # Handle form submission
         user_email = session.get('user_email')
@@ -688,6 +753,10 @@ def book_doctor():
         specialization = request.form['specialization']
         
         # Encrypt sensitive data
+        encrypted_user_email = encrypt_data(user_email)
+        encrypted_patient_nic = encrypt_data(patient_nic)
+        encrypted_preferred_date = encrypt_data(preferred_date)
+        encrypted_preferred_time = encrypt_data(preferred_time)
         encrypted_doctor_email = encrypt_data(doctor_email)
         encrypted_specialization = encrypt_data(specialization)
         
@@ -697,7 +766,7 @@ def book_doctor():
         cursor.execute('''
         INSERT INTO appointment_bookings (user_email, patient_nic, preferred_date, preferred_time, doctor_email, specialization)
         VALUES (%s, %s, %s, %s, %s, %s)
-        ''', (user_email, patient_nic, preferred_date, preferred_time, encrypted_doctor_email, encrypted_specialization))
+        ''', (encrypted_user_email, encrypted_patient_nic, encrypted_preferred_date, encrypted_preferred_time, encrypted_doctor_email, encrypted_specialization))
         conn.commit()
         cursor.close()
         conn.close()
@@ -719,6 +788,43 @@ def book_doctor():
         doctor['specialization'] = decrypt_data(doctor['specialization'])
     
     return render_template('book_doctor.html', doctors=doctors)
+
+
+
+# # Handle doctor appoinment card view and select  doctor appoinment data with decryption.
+@app.route('/appoinments')
+def display_appoinments():
+    # Check if user is logged in
+    if 'jwt_token' not in session:
+        flash("You need to log in to access this page.", "warning")
+        return redirect(url_for('login'))
+    # Get the logged-in user's email from the session
+    user_email = session.get('user_email')
+    #print("User email from session: ", user_email)
+
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)  # Fetch data as dictionaries
+    cursor.execute("SELECT * FROM appointment_bookings")
+    appoinments = cursor.fetchall()
+    cursor.close()
+    conn.close()
+
+    # Decrypt data and filter based on user's email
+    filtered_appoinments = []
+    for appoinment in appoinments:
+        # Decrypt data
+        appoinment['patient_nic'] = decrypt_data(appoinment['patient_nic'])
+        appoinment['user_email'] = decrypt_data(appoinment['user_email'])
+        appoinment['preferred_date'] = decrypt_data(appoinment['preferred_date'])
+        appoinment['preferred_time'] = decrypt_data(appoinment['preferred_time'])
+        appoinment['specialization'] = decrypt_data(appoinment['specialization'])
+        
+        # Filter based on user's email
+        if appoinment['user_email'] == user_email:
+            filtered_appoinments.append(appoinment)
+
+    return render_template('appoinment.html', appoinments=filtered_appoinments)
+
 
 
 # Route to display the bookings in table view
@@ -774,7 +880,7 @@ def appointment_management():
 
 # Route to delete an appointment based on its booking_id (primary key)
 @app.route('/admin/appointments/delete/<int:booking_id>', methods=['POST'])
-def delete_appointment(booking_id):
+def delete_appointments(booking_id):
     connection = get_db_connection()
     cursor = connection.cursor()
     cursor.execute("DELETE FROM appointment_bookings WHERE booking_id = %s", (booking_id,))

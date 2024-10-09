@@ -215,23 +215,23 @@
       </div>
 
       <div class="col-md-4">
+        <div class="card" style="width: 350px;">
+            <img src="static/images/r1.jpg" class="card-img-top" alt="E-Checkup Booking" style="height: 200px; object-fit: cover;">
+            <div class="card-body">
+              <h5 class="card-title">E-Checkups</h5>
+              <p class="card-text">Easily book your regular health checkups online, choosing the best time and tests for your needs.</p>
+              <a href="{{ url_for('s_regularCheckup') }}" class="btn btn-primary">Book Now</a>
+            </div>
+          </div>
+    </div>
+
+      <div class="col-md-4">
           <div class="card" style="width: 350px;">
               <img src="static/images/p1.jpg" class="card-img-top" alt="E-Prescription" style="height: 200px; object-fit: cover;">
               <div class="card-body">
                 <h5 class="card-title">E-Prescription</h5>
                 <p class="card-text">Get prescription's Medicine via our system.This streamlining the process of managing and filling your medications.</p>
                 <a href="{{ url_for('upload_file') }}" class="btn btn-primary">Book Now</a>
-              </div>
-            </div>
-      </div>
-
-      <div class="col-md-4">
-          <div class="card" style="width: 350px;">
-              <img src="static/images/r1.jpg" class="card-img-top" alt="E-Checkup Booking" style="height: 200px; object-fit: cover;">
-              <div class="card-body">
-                <h5 class="card-title">E-Checkups</h5>
-                <p class="card-text">Easily book your regular health checkups online, choosing the best time and tests for your needs.</p>
-                <a href="{{ url_for('s_regularCheckup') }}" class="btn btn-primary">Book Now</a>
               </div>
             </div>
       </div>
@@ -245,7 +245,7 @@
           <div class="card-body">
             <h5 class="card-title">MY E-Appoinment</h5>
             <p class="card-text">Stay updated on public health services and information, promoting community health awareness.</p>
-            <a href="#" class="btn btn-primary">Check Now</a>
+            <a href="{{ url_for('display_appoinments') }}" class="btn btn-primary">Check Now</a>
           </div>
         </div>
     </div>
