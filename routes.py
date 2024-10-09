@@ -7,13 +7,13 @@ from model import (
     send_verification_email,save_doctor_details, send_welcome_email
 )
 
-from datetime import datetime, timedelta
-import requests
-import secrets
-from werkzeug.utils import secure_filename
-from werkzeug.security import generate_password_hash, check_password_hash
-import os
-import jwt
+from datetime import datetime, timedelta # Import the datetime class from the datetime module    
+import requests # Import the requests module
+import secrets # Import the secrets module
+from werkzeug.utils import secure_filename # Import the secure_filename function from the werkzeug.utils module
+from werkzeug.security import generate_password_hash, check_password_hash # Import the generate_password_hash and check_password_hash functions from the werkzeug.security module
+import os # Import the os module
+import jwt # Import the jwt module
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -23,7 +23,7 @@ app.secret_key = secrets.token_urlsafe(32)
 # Secret key for JWT
 jwt_secret = secrets.token_urlsafe(32)
 # Secret key for RECAPTCHA  
-RECAPTCHA_SECRET_KEY = '6LdyBisqAAAAAFMn8RKKJU3yxIxggaX6kVk1fi5G'  
+RECAPTCHA_SECRET_KEY = 'RECAPTCHA_SECRET_KEY'  
 
 # Function to load the secret key from a file
 def load_secret_key():

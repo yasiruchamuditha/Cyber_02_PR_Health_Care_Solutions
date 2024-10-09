@@ -88,7 +88,7 @@ def generate_jwt_token(UserEmail, jwt_secret):
 
 def decode_jwt_token(token, jwt_secret):
     try:
-        decoded = jwt.decode(token, jwt_secret, algorithms=['HS256'])
+        decoded = jwt.decode(token, jwt_secret, algorithms=['HS256'])#HS256 is the algorithm used to encode the token
         return decoded['user']
         
     except jwt.ExpiredSignatureError:
@@ -103,9 +103,10 @@ def decode_jwt_token(token, jwt_secret):
 def generate_verification_code():
     return secrets.token_hex(3).upper()  # Generates a 6-character alphanumeric code
 
+# Email for welcome message
 def send_welcome_email(to_email):
-    from_email = "prcaretest@gmail.com"
-    from_password = "rmtoagnrrqvjnzne"  # environment variable in production
+    from_email = "email"
+    from_password = "password"  # environment variable in production
 
     subject = 'Welcome to PRCARE Solutions!'
     # Customized HTML body with styling
@@ -152,8 +153,8 @@ def send_welcome_email(to_email):
 
 #Account verification - registration process
 def send_verification_email(to_email, code):
-    from_email = "prcaretest@gmail.com"
-    from_password = "rmtoagnrrqvjnzne"  # Replace with environment variable in production
+    from_email = "email"
+    from_password = "password"  # Replace with environment variable in production
 
     subject = "Account Verification Code"
     # Updated HTML body with styling similar to the image
@@ -195,8 +196,8 @@ def send_verification_email(to_email, code):
 
 #Account verification - Recovery process
 def send_recovery_code(to_email, code):
-    from_email = "prcaretest@gmail.com"
-    from_password = "rmtoagnrrqvjnzne"  # environment variable in production
+    from_email = "email"
+    from_password = "password"  # environment variable in production
 
     subject = "Account Recovery Code"
     # Updated HTML body with styling similar to the image
@@ -238,8 +239,8 @@ def send_recovery_code(to_email, code):
 
 #Password reset succesful email
 def send_successful_password_reset_email(to_email):
-    from_email = "prcaretest@gmail.com"
-    from_password = "rmtoagnrrqvjnzne"  # Replace with environment variable in production
+    from_email = "email"
+    from_password = "password"  # Replace with environment variable in production
 
     subject = "Password Reset Successful"
     body = f"""
