@@ -66,10 +66,6 @@ cd pr-healthcare-solutions
 
 ### Install Dependencies
 ```bash
-npm install  
-```
-or
-```bash
 pip install -r requirements.txt  
 ```
 
