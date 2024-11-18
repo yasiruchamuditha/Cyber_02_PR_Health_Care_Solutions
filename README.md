@@ -13,7 +13,7 @@ This report details how the system design and implementation overcome cybersecur
 - **Authentications**: Ensuring that only authorized users can access the system.
 - **Authorizations**: Granting permissions to users based on their roles.
 - **Secure Data Storage**: Storing data securely to prevent unauthorized access.
-- **Secure Data Retrieval**: Ensuring that data retrieval processes are secure and protected from breaches.
+- **Secure Data Retrieval**: Ensuring data retrieval processes are secure and protected from breaches.
 
 ## Features
 
@@ -37,7 +37,7 @@ PR Healthcare Solutions ensures secure data management with secure data storage 
 
 ### Prescription and Checkup Management
 - Tracks and updates patient prescriptions and checkup details.
-- Offers easy access to past records for continuity of care.
+- Offers easy access to records for continuity of care.
 
 ### Admin Panel
 - Allows administrators to manage user roles and permissions.
@@ -70,10 +70,10 @@ pip install -r requirements.txt
 ```
 
 ### Setup Environment Variables
-Setup with your file with the following keys:
+Set up your file with the following keys:
 ```makefile
-DATABASE_URL=<your-database-url>  
-SECRET_KEY=<your-secret-key>  
+DATABASE_URL= your-database-url 
+SECRET_KEY= your-secret-key  
 ```
 
 ### Run the Application
@@ -85,6 +85,9 @@ python flask_app.py
 - **Login/Register**: Access the system through a secure login page.
 - **Dashboard**: Navigate through patient data, appointments, and checkups.
 - **Admin Panel**: Manage user roles, permissions, and system settings.
+
+## Author
+- **Yasiru Chamuditha** - [GitHub Profile](https://github.com/yasiruchamuditha)
 
 ## Contribution
 Contributions are welcome! To contribute:
