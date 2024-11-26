@@ -1,6 +1,6 @@
 Flask==2.3.3
 mysql-connector-python==9.1.0
-cryptography==41.0.3
+cryptography==43.0.1
 requests==2.31.0
 Werkzeug==2.3.7
 PyJWT==2.7.0
