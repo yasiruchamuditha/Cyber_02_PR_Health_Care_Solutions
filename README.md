@@ -4,7 +4,7 @@ Today the world is moving fast towards the digital age and the security of the s
 
 ## Overview
 
-PR Healthcare Solutions is a medium-sized health management system that provides services to patients and healthcare workers by managing patients’ health records, appointments, prescriptions, and checkups. On the administration side, this system mainly focuses on patients, doctor appointments, and checkup management through a proper admin panel.
+PR Healthcare Solutions is a medium-sized health management system that provides services to patients and healthcare workers by managing patients' health records, appointments, prescriptions, and checkups. On the administration side, this system mainly focuses on patients, doctor appointments, and checkup management through a proper admin panel.
 
 ## Cyber Security Measures
 
@@ -15,16 +15,6 @@ This report details how the system design and implementation overcome cybersecur
 - **Secure Data Storage**: Storing data securely to prevent unauthorized access.
 - **Secure Data Retrieval**: Ensuring data retrieval processes are secure and protected from breaches.
 
-## Features
-
-- **Patient Management**: Manage patient health records, appointments, prescriptions, and checkups.
-- **Doctor Appointments**: Schedule and manage doctor appointments.
-- **Admin Panel**: A comprehensive admin panel for managing patients and appointments.
-- **Secure Data Management**: Ensures secure data storage and provides access to authorized personnel only.
-
-## Conclusion
-
-PR Healthcare Solutions ensures secure data management with secure data storage and provides access to authorized personnel, making it a reliable and secure health management system in the digital age.
 ## Key Features
 
 ### Patient Health Record Management
@@ -44,41 +34,46 @@ PR Healthcare Solutions ensures secure data management with secure data storage 
 - Provides control over doctor appointments, patient data, and system configurations.
 
 ## Technologies Used
-- **Frontend**: [ React]
-- **Backend**: [Python, Django]
-- **Database**: [ MySQL]
-- **Encryption**: AES-256 for secure data storage.
+- **Frontend**: HTML, CSS, JavaScript
+- **Template Engine**: Jinja2 (Flask)
+- **Backend**: Python, Flask
+- **Database**: MySQL
+- **Encryption**: Fernet symmetric encryption (via the `cryptography` library) for securing sensitive patient data such as NIC numbers, emails, and appointment details.
+- **Authentication**: JWT (JSON Web Tokens via PyJWT) for session management.
 - **Communication Protocols**: HTTPS for secure data transfer.
 
 ## System Requirements
 - **Server**: Linux/Windows server
 - **Frontend**: Any modern web browser (Google Chrome, Mozilla Firefox, Microsoft Edge).
-- **Backend**: Python 3.x / Node.js runtime.
+- **Backend**: Python 3.x
 - **Database**: MySQL
 
 ## Installation
 
 ### Clone the Repository
 ```bash
-git clone https://github.com/yasiruchamuditha/Cyber_02_PR_Health_Care_Solutions.git 
-cd pr-healthcare-solutions  
+git clone https://github.com/yasiruchamuditha/Cyber_02_PR_Health_Care_Solutions.git
+cd Cyber_02_PR_Health_Care_Solutions
 ```
 
 ### Install Dependencies
 ```bash
-pip install -r requirements.txt  
+pip install -r requirements.txt
 ```
 
-### Setup Environment Variables
-Set up your file with the following keys:
-```makefile
-DATABASE_URL= your-database-url 
-SECRET_KEY= your-secret-key  
+### Setup the Database
+Create a MySQL database named `flask_auth_db` and update the connection details in `model.py` if needed:
+```python
+host='localhost'
+user='root'
+password='your-db-password'
+database='flask_auth_db'
 ```
+The application will automatically create the required tables on first run.
 
 ### Run the Application
 ```bash
-python flask_app.py   
+python flask_app.py
 ```
 
 ## Usage
@@ -99,3 +94,7 @@ Contributions are welcome! To contribute:
 
 ## License
 This project is licensed under the MIT License.
+
+## Conclusion
+
+PR Healthcare Solutions ensures secure data management with secure data storage and provides access to authorized personnel, making it a reliable and secure health management system in the digital age.
