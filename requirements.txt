@@ -1,7 +1,7 @@
-Flask==2.3.3
-mysql-connector-python==9.1.0
-cryptography==46.0.5
-requests==2.32.2
-Werkzeug==3.0.6
-PyJWT==2.7.0
-email-validator==2.1.0
+Flask==
+mysql-connector-python==
+cryptography==
+requests==
+Werkzeug==
+PyJWT==
+email-validator==
